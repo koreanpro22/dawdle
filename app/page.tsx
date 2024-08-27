@@ -21,18 +21,17 @@ export default function Landing() {
 
   const [email, setEmail] = useState('');
 
+    function isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
   const handleEmailSubmit = async () => {
-
-    if (!email) return
-
+    if (!isValidEmail(email)) return alert('Not a valid Email')
     const res = await addEmail(email)
-    
     setEmail('')
-    
     if (res === 'Email already exists') return alert('Email already exists')
-    
     alert(`Set up email for ${email}`)
-    
   }
 
   const handleGetAllEmails = async () => {
