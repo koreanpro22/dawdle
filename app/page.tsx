@@ -1,6 +1,7 @@
 'use client'
 import Image from "next/image";
-// import { useSession, signIn, signOut } from "next-auth/react"
+import { useState } from "react";
+import { getAllEmails, addEmail } from "./lib/actions";
 
 // export default function Component() {
 //   const { data: session } = useSession()
@@ -13,7 +14,33 @@ import Image from "next/image";
 //       </>
 //     )
 //   }
+
+
+
 export default function Landing() {
+
+  const [email, setEmail] = useState('');
+
+  const handleEmailSubmit = async () => {
+
+    if (!email) return
+
+    const res = await addEmail(email)
+    
+    setEmail('')
+    
+    if (res === 'Email already exists') return alert('Email already exists')
+    
+    alert(`Set up email for ${email}`)
+    
+  }
+
+  const handleGetAllEmails = async () => {
+    const emails = await getAllEmails()
+    console.log(emails)
+  }
+
+
   return (
     <div className="flex flex-col lg:flex-row w-[80%] m-auto lg:h-screen py-[1vh]">
       <div className="h-full lg:my-auto mx-auto flex flex-col lg:justify-center">
@@ -34,6 +61,23 @@ export default function Landing() {
             <input
               className="animate-fadeIn outline-none transition-all ease-in-out duration-300 hover:bg-hover-color focus:bg-hover-color px-5 placeholder:text-black rounded-full py-5 bg-secondary-accent-color"
               type="text"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+            />
+            <button
+              className="animate-fadeIn self-end bg-primary-accent-color text-primary-text-color w-min py-3 px-5 rounded-full"
+              // type="submit"
+              onClick={() => handleEmailSubmit()}
+            >
+              submit
+            </button>
+          </div>
+          {/* Email + Password Inputs */}
+          {/* <div className="flex lg:flex-row flex-col justify-start lg:gap-[2vh] gap-[1vh]">
+            <input
+              className="animate-fadeIn outline-none transition-all ease-in-out duration-300 hover:bg-hover-color focus:bg-hover-color px-5 placeholder:text-black rounded-full py-5 bg-secondary-accent-color"
+              type="text"
               placeholder="Email"
             />
             <input
@@ -47,7 +91,7 @@ export default function Landing() {
             >
               submit
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
 
