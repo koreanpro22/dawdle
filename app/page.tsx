@@ -1,20 +1,37 @@
 'use client'
 import Image from "next/image";
-import { useState} from "react";
-import { auth } from "../lib/firebase/config";
+import { useState, useEffect } from "react";
+import { auth, firestore } from "../lib/firebase/config";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut } from "firebase/auth";
 import { selectUser } from "../lib/store/userSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../lib/store/userSlice";
+import { addDoc, collection, query, where, getDocs, updateDoc, arrayUnion } from "firebase/firestore";
+import Modal from "@mui/material/Modal";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
 
+type Group = {
+  id: string;
+  name: string;
+  author: string;
+  participants: { id: string; email: string }[];
+  events: any[]; // Adjust this type based on the structure of your `events` field
+  secret_key: string;
+  // Add other properties as necessary
+};
 
 export default function Landing() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState("");
-  const [isLogin, setIsLogin] = useState(false); // State to toggle between login and signup
+  const [isLogin, setIsLogin] = useState(false); 
+  const [groupName, setGroupName] = useState("");
+  const [open, setOpen] = useState(false);
+  const [secretKey, setSecretKey] = useState("");
+  const [userGroups, setUserGroups] = useState<Group[]>([]);
   const user = useSelector(selectUser);
-  const dispatch = useDispatch()
-  console.log('user:', user);
+  const dispatch = useDispatch();
 
   const handleSubmit = () => {
     if (isLogin) {
@@ -25,7 +42,7 @@ export default function Landing() {
     } else {
       createUserWithEmailAndPassword(auth, email, password).catch((error) => {
         const errorMessage = error.message;
-        setError("Invalid Email or Password");
+        alert("Invalid Email or Password");
       });
     }
   };
@@ -37,7 +54,7 @@ export default function Landing() {
         .then(() => alert("Email sent. Check inbox for password reset"))
         .catch((error) => {
           console.error(error);
-          setError("Failed to send reset email");
+          alert("Failed to send reset email");
         });
     }
   };
@@ -49,23 +66,201 @@ export default function Landing() {
           dispatch(setUser(null));
         })
         .catch((error) => {
-          console.log(error.message);
+          console.error(error);
+          alert("Sign Out Failed");
         });
     }
   };
 
+  useEffect(() => {
+    if (user) {
+      fetchUserGroups();
+    }
+  }, [user]);
+
+
+  async function fetchUserGroups() {
+    const qAuthor = query(collection(firestore, "groups"), where("author", "==", user.id));
+    const qParticipant = query(collection(firestore, "groups"), where("participants", "array-contains", {
+      id: user.id,
+      email: user.email
+    }));
+    try {
+      const [authorSnapshot, participantSnapshot] = await Promise.all([getDocs(qAuthor), getDocs(qParticipant)]);
+      const groups: Group[] = [
+        ...authorSnapshot.docs,
+        ...participantSnapshot.docs
+      ].map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: data.name || 'Unnamed Group', // Provide a default value if name is missing
+          author: data.author || '', // Default if author is missing
+          participants: data.participants || [], // Default to empty array if participants are missing
+          events: data.events || [], // Default to empty array if events are missing
+          secret_key: data.secret_key || '', // Default if secret_key is missing
+          // Include other properties as necessary
+        };
+      });
+  
+      setUserGroups(groups);
+    } catch (e) {
+      console.error("Error fetching groups: ", e);
+    }
+  }
+
+  function generateSecretKey(length = 8) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+  }
+
+  async function createGroup() {
+    const groupData = {
+        author: user?.id,
+        name: groupName,
+        events: [],
+        participants: [],
+        secret_key: generateSecretKey(),
+    };
+
+    try {
+        const groupRef = await addDoc(collection(firestore, "groups"), groupData);
+        console.log("Group created with ID: ", groupRef.id);
+        setOpen(false);
+        setGroupName("");
+        return groupRef.id;
+    } catch (e) {
+        console.error("Error adding document: ", e);
+        throw new Error("Failed to create group");
+    }
+  }
+
+  async function joinGroup() {
+    const q = query(collection(firestore, "groups"), where("secret_key", "==", secretKey));
+
+    try {
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        alert("No group found with that secret key.");
+        return;
+      }
+
+      const groupDoc = querySnapshot.docs[0];
+      const groupRef = groupDoc.ref;
+
+
+      await updateDoc(groupRef, {
+        participants: arrayUnion({
+          id: user?.id,
+          email: user?.email
+        })
+      });
+
+      console.log("User added to group with ID: ", groupDoc.id);
+      alert("Successfully joined the group!");
+      handleClose(); 
+
+    } catch (e) {
+      console.error("Error joining group: ", e);
+      alert("Failed to join the group.");
+    }
+  }
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
   if (user) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex flex-col justify-center items-center h-screen">
         <button
-          className="bg-red-600 text-white text-3xl py-5 px-10 rounded-full"
+          className="bg-red-600 text-white text-3xl py-5 px-10 rounded-full mb-4"
           onClick={handleSignOut}
         >
           Sign Out
         </button>
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={handleOpen}
+          style={{ fontSize: '2rem' }}
+        >
+          +
+        </Button>
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="create-group-modal"
+          aria-describedby="modal-to-create-group"
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 400,
+              bgcolor: 'background.paper',
+              boxShadow: 24,
+              p: 4,
+              borderRadius: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2
+            }}
+          >
+            <h2 id="create-group-modal">Create a New Group</h2>
+            <TextField 
+              label="Group Name" 
+              variant="outlined" 
+              fullWidth 
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+            />
+            <Button 
+              variant="contained" 
+              color="primary" 
+              onClick={createGroup}
+            >
+              Create Group
+            </Button>
+            <h2>Or Join a Group</h2>
+            <TextField
+              label="Secret Key"
+              variant="outlined"
+              fullWidth
+              value={secretKey}
+              onChange={(e) => setSecretKey(e.target.value)}
+            />
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={joinGroup}
+            >
+              Join Group
+            </Button>
+          </Box>
+        </Modal>
+        <div className="mt-4">
+          <h3 className="text-2xl font-bold mb-2">Your Groups</h3>
+          <ul>
+            {userGroups?.map(group => (
+              <li key={group?.id} className="text-xl mb-1">
+                {group.name}
+                <br />
+                {group.secret_key}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
-    );
+    )
   }
+
 
   return (
     <div className="flex flex-col lg:flex-row w-[80%] m-auto lg:h-screen py-[1vh]">
