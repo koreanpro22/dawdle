@@ -22,7 +22,6 @@ export default function Landing() {
     setEmail("");
     setAllEmails(allEmails + 1);
     if (res === "Email already exists") return alert("Email already exists");
-    alert(`Set up email for ${email}`);
   };
 
   const handleGetAllEmails = async () => {
@@ -35,7 +34,7 @@ export default function Landing() {
   }, []);
 
   return (
-    <div className="animation-3d lg:w-[90%] flex flex-col lg:flex-row m-auto lg:h-screen p-[3vh] max-h-[100dvh] h-[100dvh] overflow-hidden">
+    <div className="lg:w-[90%] flex flex-col lg:flex-row m-auto lg:h-screen p-[3vh] max-h-[100dvh] h-[100dvh] overflow-hidden">
       <div className="lg:my-auto mx-auto flex flex-col lg:justify-center">
         <audio
           ref={audioRef}
@@ -53,7 +52,7 @@ export default function Landing() {
           place.
         </h1>
         <div className="text-primary-accent-color font-bold text-center lg:ml-0 lg:w-[90%]">
-          <h2 className="animate-flip lg:animate-none lg:w-[100%] Lg:text-right text-[#FFCD80] text-[18vh] lg:text-[20vh] tracking-[-0.1em] font-[900] lg:pl-5">
+          <h2 className="lg:animate-rotate animate-flip lg:w-[100%] Lg:text-right text-[#FFCD80] text-[18vh] lg:text-[20vh] tracking-[-0.1em] font-[900] lg:pl-5">
             {allEmails}
           </h2>
           <p className="leading-[4rem] -mt-[6vh] lg:mt-0 lg:text-right animate-fadeIn lg:text-[3vh] text-[8vh] font-[800] lg:mr-0">

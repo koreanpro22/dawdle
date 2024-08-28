@@ -29,6 +29,14 @@ const config: Config = {
             transform: "rotateY(180deg)",
           },
         },
+        rotate : {
+          "0%, 100%": {
+            transform: "rotateY(0deg)",
+          },
+          "50%": {
+            transform: "rotateY(180deg)",
+          },
+        },
         swim: {
           "0%, 100": {
             transform: "translateY(0vh) scale(0.5) rotate(0deg)",
@@ -49,6 +57,7 @@ const config: Config = {
       animation: {
         fadeIn: "fadeIn 0.5s forwards cubic-bezier(.44,0,.68,.96)",
         flip: "flip 3.25s forwards cubic-bezier(0,1.65,.73,.45)",
+        rotate: "rotate 3.25s forwards cubic-bezier(0,1.65,.73,.45)",
         swim: "swim 6s infinite forwards",
       },
     },
