@@ -15,6 +15,11 @@ export default function Landing() {
     }
   };
 
+    function isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
   const handleEmailSubmit = async () => {
     playSound();
     if (!email) return;
