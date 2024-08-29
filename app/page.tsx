@@ -115,6 +115,36 @@ export default function Landing() {
       console.error("Error fetching groups: ", e);
     }
   }
+  // Show route for individual group pages
+  // async function fetchUserGroup(groupId: string): Promise<Group | null> {
+  //   try {
+  //     const groupRef = doc(firestore, "groups", groupId);
+      
+  //     const groupDoc = await getDoc(groupRef);
+  
+  //     if (groupDoc.exists()) {
+  //       const data = groupDoc.data();
+
+  //       const group: Group = {
+  //         id: groupDoc.id,
+  //         name: data.name || 'Unnamed Group',
+  //         author: data.author || '',
+  //         participants: data.participants || [],
+  //         events: data.events || [],
+  //         secret_key: data.secret_key || '',
+  //         imageUrl: data.imageUrl || '',
+  //       };
+  
+  //       return group;
+  //     } else {
+  //       console.log("No such group!");
+  //       return null;
+  //     }
+  //   } catch (e) {
+  //     console.error("Error fetching group: ", e);
+  //     return null;
+  //   }
+  // }
 
   function generateSecretKey(length = 8) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -269,6 +299,7 @@ export default function Landing() {
       }
     }
   }
+
   async function removeParticipant(participantId: string) {
     if (editGroup) {
       const updatedParticipants = editGroup.participants.filter(participant => participant.id !== participantId);
@@ -514,7 +545,7 @@ export default function Landing() {
         <div className="z-10 w-[80%] lg:my-0 lg:mx-0 mx-auto flex flex-col gap-3 my-5 pb-5">
           <p
             className="text-primary-text-color lg:self-start self-center underline underline-offset-2 cursor-pointer"
-            onClick={() => setIsLogin(!isLogin)} // Toggle between login and signup
+            onClick={() => setIsLogin(!isLogin)}
           >
             {isLogin ? "Become one of them!" : "Are you one of them?"}
           </p>
