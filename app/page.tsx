@@ -1,25 +1,13 @@
 "use client";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
-import { auth, firestore } from "../lib/firebase/config";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail,
-  signOut,
-} from "firebase/auth";
+import { auth, firestore, storage } from "../lib/firebase/config";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut } from "firebase/auth";
 import { selectUser } from "../lib/store/userSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../lib/store/userSlice";
-import {
-  addDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-  arrayUnion,
-} from "firebase/firestore";
+import { doc, collection, addDoc, deleteDoc, updateDoc, arrayUnion, arrayRemove, getDoc, getDocs, query, where } from "firebase/firestore";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -30,9 +18,9 @@ type Group = {
   name: string;
   author: string;
   participants: { id: string; email: string }[];
-  events: any[]; // Adjust this type based on the structure of your `events` field
+  events: any[]; 
   secret_key: string;
-  // Add other properties as necessary
+  imageUrl?: string;
 };
 
 export default function Landing() {
@@ -47,6 +35,9 @@ export default function Landing() {
   const [secretKey, setSecretKey] = useState("");
   const [userGroups, setUserGroups] = useState<Group[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editGroup, setEditGroup] = useState<Group | null>(null);
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
 
@@ -62,6 +53,8 @@ export default function Landing() {
         alert("Invalid Email or Password");
       });
     }
+    setEmail("")
+    setPassword("")
   };
 
   const handlePasswordReset = () => {
@@ -119,12 +112,12 @@ export default function Landing() {
         const data = doc.data();
         return {
           id: doc.id,
-          name: data.name || "Unnamed Group", // Provide a default value if name is missing
-          author: data.author || "", // Default if author is missing
-          participants: data.participants || [], // Default to empty array if participants are missing
-          events: data.events || [], // Default to empty array if events are missing
-          secret_key: data.secret_key || "", // Default if secret_key is missing
-          // Include other properties as necessary
+          name: data.name || 'Unnamed Group', 
+          author: data.author || '', 
+          participants: data.participants || [],
+          events: data.events || [], 
+          secret_key: data.secret_key || '', 
+          imageUrl: data.imageUrl || '',
         };
       });
 
@@ -133,6 +126,36 @@ export default function Landing() {
       console.error("Error fetching groups: ", e);
     }
   }
+  // Show route for individual group pages
+  // async function fetchUserGroup(groupId: string): Promise<Group | null> {
+  //   try {
+  //     const groupRef = doc(firestore, "groups", groupId);
+      
+  //     const groupDoc = await getDoc(groupRef);
+  
+  //     if (groupDoc.exists()) {
+  //       const data = groupDoc.data();
+
+  //       const group: Group = {
+  //         id: groupDoc.id,
+  //         name: data.name || 'Unnamed Group',
+  //         author: data.author || '',
+  //         participants: data.participants || [],
+  //         events: data.events || [],
+  //         secret_key: data.secret_key || '',
+  //         imageUrl: data.imageUrl || '',
+  //       };
+  
+  //       return group;
+  //     } else {
+  //       console.log("No such group!");
+  //       return null;
+  //     }
+  //   } catch (e) {
+  //     console.error("Error fetching group: ", e);
+  //     return null;
+  //   }
+  // }
 
   function generateSecretKey(length = 8) {
     const characters =
@@ -145,21 +168,39 @@ export default function Landing() {
     return result;
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    }
+  };
+  
+
   async function createGroup() {
+    let imageURL = "";
+
+    if (imageFile) {
+      const storageRef = ref(storage, `groups/${user?.id}/${Date.now()}_${imageFile.name}`);
+      const uploadTask = await uploadBytes(storageRef, imageFile);
+      imageURL = await getDownloadURL(uploadTask.ref);
+    } 
+
     const groupData = {
-      author: user?.id,
-      name: groupName,
-      events: [],
-      participants: [],
-      secret_key: generateSecretKey(),
+        author: user?.id,
+        name: groupName,
+        events: [],
+        participants: [],
+        secret_key: generateSecretKey(),
+        imageUrl: imageURL
     };
 
     try {
-      const groupRef = await addDoc(collection(firestore, "groups"), groupData);
-      console.log("Group created with ID: ", groupRef.id);
-      setOpen(false);
-      setGroupName("");
-      return groupRef.id;
+        const groupRef = await addDoc(collection(firestore, "groups"), groupData);
+        fetchUserGroups()
+        console.log("Group created with ID: ", groupRef.id);
+        setOpen(false);
+        setGroupName("");
+        setImageFile(null);
+        return groupRef.id;
     } catch (e) {
       console.error("Error adding document: ", e);
       throw new Error("Failed to create group");
@@ -191,7 +232,10 @@ export default function Landing() {
 
       console.log("User added to group with ID: ", groupDoc.id);
       alert("Successfully joined the group!");
-      handleClose();
+      handleClose(); 
+      setSecretKey("")
+      fetchUserGroups()
+
     } catch (e) {
       console.error("Error joining group: ", e);
       alert("Failed to join the group.");
@@ -200,6 +244,100 @@ export default function Landing() {
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  async function deleteGroup(groupId: string) {
+    if (confirm("Are you sure you want to delete this group? This action cannot be undone.")) {
+      try {
+        const groupRef = doc(firestore, "groups", groupId);
+        await deleteDoc(groupRef);
+        alert("Group deleted successfully.");
+        fetchUserGroups(); 
+      } catch (e) {
+        console.error("Error deleting group: ", e);
+        alert("Failed to delete group.");
+      }
+    }
+  }
+
+  async function leaveGroup(groupId: string) {
+    if (confirm("Are you sure you want to leave this group?")) {
+      try {
+        const groupRef = doc(firestore, "groups", groupId);
+        await updateDoc(groupRef, {
+          participants: arrayRemove({
+            id: user?.id,
+            email: user?.email,
+          }),
+        });
+        alert("You have left the group.");
+        fetchUserGroups(); 
+      } catch (e) {
+        console.error("Error leaving group: ", e);
+        alert("Failed to leave the group.");
+      }
+    }
+  }
+
+  const handleEditOpen = (group: Group) => {
+    setEditGroup(group);
+    setEditOpen(true);
+  };
+
+  const handleEditClose = () => {
+    setEditGroup(null);
+    setEditOpen(false);
+  };
+
+  async function updateGroup() {
+    let imageURL = editGroup?.imageUrl || "";
+
+    if (imageFile) {
+      const storageRef = ref(storage, `groups/${user?.id}/${Date.now()}_${imageFile.name}`);
+      const uploadTask = await uploadBytes(storageRef, imageFile);
+      imageURL = await getDownloadURL(uploadTask.ref);
+    }
+
+    if (editGroup) {
+      const groupRef = doc(firestore, "groups", editGroup.id);
+      try {
+        await updateDoc(groupRef, {
+          name: groupName || editGroup.name,
+          imageUrl: imageURL,
+        });
+        alert("Group updated successfully.");
+        fetchUserGroups();
+        handleEditClose();
+      } catch (e) {
+        console.error("Error updating group: ", e);
+        alert("Failed to update group.");
+      }
+    }
+  }
+
+  async function removeParticipant(participantId: string) {
+    if (editGroup) {
+      const updatedParticipants = editGroup.participants.filter(participant => participant.id !== participantId);
+      setEditGroup({ ...editGroup, participants: updatedParticipants });
+  
+      const groupRef = doc(firestore, "groups", editGroup.id);
+      try {
+        await updateDoc(groupRef, {
+          participants: arrayRemove({
+            id: participantId,
+            email: editGroup.participants.find(p => p.id === participantId)?.email
+          }),
+        });
+        alert("Participant removed successfully.");
+        fetchUserGroups(); // Refresh the group list
+      } catch (e) {
+        console.error("Error removing participant: ", e);
+        alert("Failed to remove participant.");
+        // Revert optimistic update if the operation fails
+        setEditGroup(prev => prev ? { ...prev, participants: editGroup.participants } : null);
+      }
+    }
+  }
+  
 
   const handleAdd = () => setAdd(true);
   const handleJoinModal = () => setJoinModal(!joinModal);
@@ -413,7 +551,7 @@ export default function Landing() {
         <div className="z-10 w-[80%] lg:my-0 lg:mx-0 mx-auto flex flex-col gap-3 my-5 pb-5">
           <p
             className="text-primary-text-color lg:self-start self-center underline underline-offset-2 cursor-pointer"
-            onClick={() => setIsLogin(!isLogin)} // Toggle between login and signup
+            onClick={() => setIsLogin(!isLogin)}
           >
             {isLogin ? "Become one of them!" : "Are you one of them?"}
           </p>
