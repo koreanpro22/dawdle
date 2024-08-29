@@ -33,6 +33,8 @@ export default function Landing() {
   const [userGroups, setUserGroups] = useState<Group[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editGroup, setEditGroup] = useState<Group | null>(null);
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
 
@@ -48,6 +50,8 @@ export default function Landing() {
         alert("Invalid Email or Password");
       });
     }
+    setEmail("")
+    setPassword("")
   };
 
   const handlePasswordReset = () => {
@@ -97,13 +101,12 @@ export default function Landing() {
         const data = doc.data();
         return {
           id: doc.id,
-          name: data.name || 'Unnamed Group', // Provide a default value if name is missing
-          author: data.author || '', // Default if author is missing
-          participants: data.participants || [], // Default to empty array if participants are missing
-          events: data.events || [], // Default to empty array if events are missing
-          secret_key: data.secret_key || '', // Default if secret_key is missing
+          name: data.name || 'Unnamed Group', 
+          author: data.author || '', 
+          participants: data.participants || [],
+          events: data.events || [], 
+          secret_key: data.secret_key || '', 
           imageUrl: data.imageUrl || '',
-          // Include other properties as necessary
         };
       });
   
@@ -186,6 +189,7 @@ export default function Landing() {
       console.log("User added to group with ID: ", groupDoc.id);
       alert("Successfully joined the group!");
       handleClose(); 
+      setSecretKey("")
       fetchUserGroups()
 
     } catch (e) {
@@ -197,40 +201,98 @@ export default function Landing() {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
- async function deleteGroup(groupId: string) {
-  if (confirm("Are you sure you want to delete this group? This action cannot be undone.")) {
-    try {
-      const groupRef = doc(firestore, "groups", groupId);
-      await deleteDoc(groupRef);
-      alert("Group deleted successfully.");
-      fetchUserGroups(); // Refresh the user's groups after deletion
-    } catch (e) {
-      console.error("Error deleting group: ", e);
-      alert("Failed to delete group.");
+  async function deleteGroup(groupId: string) {
+    if (confirm("Are you sure you want to delete this group? This action cannot be undone.")) {
+      try {
+        const groupRef = doc(firestore, "groups", groupId);
+        await deleteDoc(groupRef);
+        alert("Group deleted successfully.");
+        fetchUserGroups(); 
+      } catch (e) {
+        console.error("Error deleting group: ", e);
+        alert("Failed to delete group.");
+      }
     }
   }
-}
 
-async function leaveGroup(groupId: string) {
-  if (confirm("Are you sure you want to leave this group?")) {
-    try {
-      const groupRef = doc(firestore, "groups", groupId);
-      await updateDoc(groupRef, {
-        participants: arrayRemove({
-          id: user?.id,
-          email: user?.email,
-        }),
-      });
-      alert("You have left the group.");
-      fetchUserGroups(); 
-    } catch (e) {
-      console.error("Error leaving group: ", e);
-      alert("Failed to leave the group.");
+  async function leaveGroup(groupId: string) {
+    if (confirm("Are you sure you want to leave this group?")) {
+      try {
+        const groupRef = doc(firestore, "groups", groupId);
+        await updateDoc(groupRef, {
+          participants: arrayRemove({
+            id: user?.id,
+            email: user?.email,
+          }),
+        });
+        alert("You have left the group.");
+        fetchUserGroups(); 
+      } catch (e) {
+        console.error("Error leaving group: ", e);
+        alert("Failed to leave the group.");
+      }
     }
   }
-}
 
+  const handleEditOpen = (group: Group) => {
+    setEditGroup(group);
+    setEditOpen(true);
+  };
 
+  const handleEditClose = () => {
+    setEditGroup(null);
+    setEditOpen(false);
+  };
+
+  async function updateGroup() {
+    let imageURL = editGroup?.imageUrl || "";
+
+    if (imageFile) {
+      const storageRef = ref(storage, `groups/${user?.id}/${Date.now()}_${imageFile.name}`);
+      const uploadTask = await uploadBytes(storageRef, imageFile);
+      imageURL = await getDownloadURL(uploadTask.ref);
+    }
+
+    if (editGroup) {
+      const groupRef = doc(firestore, "groups", editGroup.id);
+      try {
+        await updateDoc(groupRef, {
+          name: groupName || editGroup.name,
+          imageUrl: imageURL,
+        });
+        alert("Group updated successfully.");
+        fetchUserGroups();
+        handleEditClose();
+      } catch (e) {
+        console.error("Error updating group: ", e);
+        alert("Failed to update group.");
+      }
+    }
+  }
+  async function removeParticipant(participantId: string) {
+    if (editGroup) {
+      const updatedParticipants = editGroup.participants.filter(participant => participant.id !== participantId);
+      setEditGroup({ ...editGroup, participants: updatedParticipants });
+  
+      const groupRef = doc(firestore, "groups", editGroup.id);
+      try {
+        await updateDoc(groupRef, {
+          participants: arrayRemove({
+            id: participantId,
+            email: editGroup.participants.find(p => p.id === participantId)?.email
+          }),
+        });
+        alert("Participant removed successfully.");
+        fetchUserGroups(); // Refresh the group list
+      } catch (e) {
+        console.error("Error removing participant: ", e);
+        alert("Failed to remove participant.");
+        // Revert optimistic update if the operation fails
+        setEditGroup(prev => prev ? { ...prev, participants: editGroup.participants } : null);
+      }
+    }
+  }
+  
 
   if (user) {
     return (
@@ -311,39 +373,108 @@ async function leaveGroup(groupId: string) {
         <div className="mt-4">
           <h3 className="text-2xl font-bold mb-2">Your Groups</h3>
           <ul>
-            {userGroups?.map(group => (
+            {userGroups?.map((group) => (
               <li key={group?.id} className="text-xl mb-1">
                 <p>{group.name}</p>
                 <br />
                 <p>{group.secret_key}</p>
-
                 {group.imageUrl && (
                   <Image
                     src={group.imageUrl}
                     alt={`${group.name} Image`}
-                    width={200} // Adjust the width as needed
-                    height={200} // Adjust the height as needed
-                    objectFit="cover" // Ensure the image is properly fitted
+                    width={200}
+                    height={200}
+                    objectFit="cover"
                   />
                 )}
-
-              {group.author === user?.id ? (
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={() => deleteGroup(group.id)}
+                {group.author === user?.id && (
+                  <>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={() => deleteGroup(group.id)}
+                    >
+                      Delete Group
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => handleEditOpen(group)}
+                    >
+                      Edit
+                    </Button>
+                  </>
+                )}
+                {group.author !== user?.id && (
+                  <>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={() => leaveGroup(group.id)}
+                    >
+                      Leave Group
+                    </Button>
+                  </>
+                )}
+                <Modal
+                  open={editOpen && editGroup?.id === group.id}
+                  onClose={handleEditClose}
+                  aria-labelledby="edit-group-modal"
+                  aria-describedby="modal-to-edit-group"
                 >
-                  Delete Group
-                </Button>
-              ) : (
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={() => leaveGroup(group.id)}
-                >
-                  Leave Group
-                </Button>
-              )}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: 400,
+                      bgcolor: 'background.paper',
+                      boxShadow: 24,
+                      p: 4,
+                      borderRadius: 2,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 2
+                    }}
+                  >
+                    <h2 id="edit-group-modal">Edit Group</h2>
+                    <TextField
+                      label="Group Name"
+                      variant="outlined"
+                      fullWidth
+                      value={editGroup?.name || ''}
+                      onChange={(e) => setEditGroup(prev => prev ? { ...prev, name: e.target.value } : null)}
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                    <h3>Participants</h3>
+                    <ul>
+                      {editGroup?.participants.map(participant => (
+                        <li key={participant.id} className="flex justify-between items-center">
+                          <span>{participant.email}</span>
+                          <Button
+                            variant="contained"
+                            color="error"
+                            onClick={() => removeParticipant(participant.id)}
+                          >
+                            Remove
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={updateGroup}
+                    >
+                      Update Group
+                    </Button>
+                  </Box>
+                </Modal>
               </li>
             ))}
           </ul>
