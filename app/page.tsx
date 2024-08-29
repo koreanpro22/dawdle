@@ -1,12 +1,13 @@
 "use client";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
-import { auth, firestore } from "../lib/firebase/config";
+import { auth, firestore, storage } from "../lib/firebase/config";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut } from "firebase/auth";
 import { selectUser } from "../lib/store/userSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../lib/store/userSlice";
-import { addDoc, collection, query, where, getDocs, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, collection, addDoc, deleteDoc, updateDoc, arrayUnion, arrayRemove, getDoc, getDocs, query, where } from "firebase/firestore";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -17,9 +18,9 @@ type Group = {
   name: string;
   author: string;
   participants: { id: string; email: string }[];
-  events: any[]; // Adjust this type based on the structure of your `events` field
+  events: any[]; 
   secret_key: string;
-  // Add other properties as necessary
+  imageUrl?: string;
 };
 
 export default function Landing() {
@@ -31,6 +32,7 @@ export default function Landing() {
   const [secretKey, setSecretKey] = useState("");
   const [userGroups, setUserGroups] = useState<Group[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
 
@@ -100,6 +102,7 @@ export default function Landing() {
           participants: data.participants || [], // Default to empty array if participants are missing
           events: data.events || [], // Default to empty array if events are missing
           secret_key: data.secret_key || '', // Default if secret_key is missing
+          imageUrl: data.imageUrl || '',
           // Include other properties as necessary
         };
       });
@@ -120,20 +123,38 @@ export default function Landing() {
     return result;
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    }
+  };
+  
+
   async function createGroup() {
+    let imageURL = "";
+
+    if (imageFile) {
+      const storageRef = ref(storage, `groups/${user?.id}/${Date.now()}_${imageFile.name}`);
+      const uploadTask = await uploadBytes(storageRef, imageFile);
+      imageURL = await getDownloadURL(uploadTask.ref);
+    } 
+
     const groupData = {
         author: user?.id,
         name: groupName,
         events: [],
         participants: [],
         secret_key: generateSecretKey(),
+        imageUrl: imageURL
     };
 
     try {
         const groupRef = await addDoc(collection(firestore, "groups"), groupData);
+        fetchUserGroups()
         console.log("Group created with ID: ", groupRef.id);
         setOpen(false);
         setGroupName("");
+        setImageFile(null);
         return groupRef.id;
     } catch (e) {
         console.error("Error adding document: ", e);
@@ -165,6 +186,7 @@ export default function Landing() {
       console.log("User added to group with ID: ", groupDoc.id);
       alert("Successfully joined the group!");
       handleClose(); 
+      fetchUserGroups()
 
     } catch (e) {
       console.error("Error joining group: ", e);
@@ -174,6 +196,41 @@ export default function Landing() {
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+ async function deleteGroup(groupId: string) {
+  if (confirm("Are you sure you want to delete this group? This action cannot be undone.")) {
+    try {
+      const groupRef = doc(firestore, "groups", groupId);
+      await deleteDoc(groupRef);
+      alert("Group deleted successfully.");
+      fetchUserGroups(); // Refresh the user's groups after deletion
+    } catch (e) {
+      console.error("Error deleting group: ", e);
+      alert("Failed to delete group.");
+    }
+  }
+}
+
+async function leaveGroup(groupId: string) {
+  if (confirm("Are you sure you want to leave this group?")) {
+    try {
+      const groupRef = doc(firestore, "groups", groupId);
+      await updateDoc(groupRef, {
+        participants: arrayRemove({
+          id: user?.id,
+          email: user?.email,
+        }),
+      });
+      alert("You have left the group.");
+      fetchUserGroups(); 
+    } catch (e) {
+      console.error("Error leaving group: ", e);
+      alert("Failed to leave the group.");
+    }
+  }
+}
+
+
 
   if (user) {
     return (
@@ -222,6 +279,11 @@ export default function Landing() {
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
             />
+              <input 
+              type="file" 
+              accept="image/*" 
+              onChange={handleFileChange} 
+            />
             <Button 
               variant="contained" 
               color="primary" 
@@ -251,9 +313,37 @@ export default function Landing() {
           <ul>
             {userGroups?.map(group => (
               <li key={group?.id} className="text-xl mb-1">
-                {group.name}
+                <p>{group.name}</p>
                 <br />
-                {group.secret_key}
+                <p>{group.secret_key}</p>
+
+                {group.imageUrl && (
+                  <Image
+                    src={group.imageUrl}
+                    alt={`${group.name} Image`}
+                    width={200} // Adjust the width as needed
+                    height={200} // Adjust the height as needed
+                    objectFit="cover" // Ensure the image is properly fitted
+                  />
+                )}
+
+              {group.author === user?.id ? (
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => deleteGroup(group.id)}
+                >
+                  Delete Group
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => leaveGroup(group.id)}
+                >
+                  Leave Group
+                </Button>
+              )}
               </li>
             ))}
           </ul>
