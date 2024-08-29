@@ -351,11 +351,25 @@ export default function Landing() {
             {userGroups?.map((group) => (
               <button className="bg-[#8A58FF] rounded-[1vh] p-[1vh] relative">
                 <div className="flex items-center gap-[1vh]">
-                  <img
-                    className="h-[75px] rounded-[1vh]"
-                    src="https://pbs.twimg.com/profile_images/1030565536248344577/tuFeM906_400x400.jpg"
-                    alt=""
+                {group.imageUrl ? (
+                  <Image
+                    src={group.imageUrl}
+                    alt={`${group.name} Image`}
+                    width={200}
+                    height={200}
+                    className="h-[8vh] w-[8vh]"
+                    objectFit="cover"
                   />
+                ) : (
+                  <Image
+                  src={`/images/duck.png`}
+                  alt={`${group.name} Image`}
+                  width={200}
+                  height={200}
+                  className="h-[8vh] w-[8vh]"
+                  objectFit="cover"
+                />
+                )}
                   <div className="flex flex-col">
                     <p className="text-white font-semibold text-[2.25vh]">
                       {group.name}
@@ -366,7 +380,7 @@ export default function Landing() {
                 <div className="right-0 bottom-0 m-[1vh] absolute flex justify-center items-center bg-[#360F50] rounded-full px-[1.5vh] py-[0.75vh]">
                   <img className="" src="/images/chick.svg" alt="" />
                   <h1 className="text-white m-auto">
-                  {group.participants.length}
+                  {group.participants.length + 1}
                   </h1>
                 </div>
               </button>
@@ -461,6 +475,7 @@ export default function Landing() {
                           type="file"
                           accept="image/*"
                           className="hidden"
+                          onChange={handleFileChange} 
                         />
                       </label>
                     </div>
