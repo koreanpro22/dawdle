@@ -133,6 +133,7 @@ table {
 }
 /* ------------------------------------------- End Reset -------------------------------------------------- */
 
+
 :root {
   --background-color: #8a58ff;
   --primary-text-color: #ffffff;
@@ -151,4 +152,10 @@ body {
 
 .animation-3d:hover {
     transform: perspective(1000px) rotateY(3deg);
+  }
+
+  .svg-button:hover .plus-icon path,
+  .svg-button:focus .plus-icon path {
+    transition: all ease-in-out 0.3s;
+    fill: #ffffff; /* Replace #newColor with the color you want */
   }
