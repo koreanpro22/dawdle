@@ -60,7 +60,6 @@ Api Documentation
             {
                 "message": "Successfully deleted user"
             }
-
         ```        
 
 
@@ -133,7 +132,7 @@ Api Documentation
         ```json
         {
             "id": "eventId",
-            "name": "Test Event 1",
+            "title": "Test Event 1",
             "type": "Clubbing",
             "address": "25 smith st",
             "groupId": "group1Id",
@@ -146,7 +145,7 @@ Api Documentation
         * Body: 
         ```json
         {
-            "name": "Test Event 1",
+            "title": "Test Event 1",
             "type": "Clubbing",
             "address": "25 smith st",
             "groupId": "group1Id",
@@ -156,7 +155,7 @@ Api Documentation
         ```json
         {
             "id": "eventId",
-            "name": "Test Event 1",
+            "title": "Test Event 1",
             "type": "Clubbing",
             "address": "25 smith st",
             "groupId": "group1Id",
@@ -171,11 +170,11 @@ Api Documentation
         }
         Response: {
             Id: eventId
-            Name: "Edit Event Name"
-            Type: "Clubbing"
-            Location: "25 smith st
-            GroupId: group1
-            People: [ ]
+            title: "Edit Event Name"
+            type: "Clubbing"
+            address: "25 smith st
+            groupId: group1
+            participants: [ ]
         } -->
 
     * DELETE /{eventId}

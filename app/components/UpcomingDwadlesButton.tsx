@@ -2,17 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  selectCurrentGlobalEvent,
-  setGlobalEvent
-} from "../slices/globalEventSlice";
 
 interface GroupProps {
-  eventName: string;
-  eventDate: string;
-  eventTime: string;
-  eventLocation: string;
-  eventMembers: string[];
+  title: string;
+  address: string;
+  date: string;
+  time: string;
+  type: string;
+  participants: string[];
   groupImgSrc: string;
 }
 
@@ -38,7 +35,6 @@ export default function UpcomingDwadlesButton({ groups }: Group) {
     newActive[index] = !newActive[index];
     setActive(newActive);
     setActiveGroupIndex(index);
-    dispatch(setGlobalEvent(index))
   };
 
   return (
@@ -49,17 +45,18 @@ export default function UpcomingDwadlesButton({ groups }: Group) {
       {groups.map((group, index) => (
         <div
           key={index}
-          onClick={() => handleEvent(index)}
+          // onClick={() => handleEvent(index)}
           className={`${
               activeGroupIndex == index
               ? "bg-primary-accent-color text-white hidden"
               : "bg-[#D9D9D9] text-primary-accent-color"
           } pl-[2vh] flex gap-[2vh] items-center justify-between w-full rounded-full text-[1.75vh]`}
         >
-          <span>{group.eventName}</span>
+          <span>{group.title}</span>
           <div>
-            <span>{group.eventDate}</span>
-            <span>{group.eventTime}</span>
+            <span>{group.date}</span>
+            <br></br>
+            <span>{group.time}</span>
           </div>
           <div
             className={`${
@@ -68,7 +65,8 @@ export default function UpcomingDwadlesButton({ groups }: Group) {
                 : "bg-primary-accent-color text-white"
             } font-[700] ml-auto w-fit rounded-full text-[2.0vh] p-[1.5vh] text-center`}
           >
-            🦆 {group.eventMembers[0]}
+            🦆 
+            {/* {group.eventMembers[0]} */}
           </div>
         </div>
       ))}

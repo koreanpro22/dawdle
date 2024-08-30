@@ -1,27 +1,54 @@
 "use client";
 import type { NextPage } from "next";
 import GroupEventCard from "../../components/GroupEventCard";
-import { GROUP_OBJ } from "../../lib/global";
 import EventDecisionButton from "../../components/EventChoiceButton";
-import UpcomingDwadlesButton from "../../components/UpcomingDwadlesButton"
+import UpcomingDwadlesButton from "../../components/UpcomingDwadlesButton";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-
-import {
-  selectCurrentGlobalEvent,
-} from "../../slices/globalEventSlice";
-
-
+import { query, collection, getDocs } from "firebase/firestore";
+import { firestore } from "@/lib/firebase/config";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { selectUser } from "@/lib/store/userSlice";
 
 const Group: NextPage = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const currentGlobalEvent = useSelector(selectCurrentGlobalEvent);
-  // this works for search params:
-  // http://localhost:3004/group/id?123
+  console.log("Pathname: ", pathname);
+  const groupId = pathname.split("/").pop();
+  console.log("groupId: ", groupId);
+  const [groupEvents, setGroupEvents] = useState<any[]>([]);
 
+  const user = useSelector(selectUser);
+
+  const getAllGroupEvents = async () => {
+    const eventsRef = query(collection(firestore, "events"));
+    const events = await getDocs(eventsRef);
+
+    const eventList: any = [];
+    console.log("Event list Before: ", eventList);
+
+    events.forEach((event: any) => {
+      eventList.push(event.data());
+    });
+
+    console.log("Event list After: ", eventList);
+
+    return eventList;
+  };
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const events = await getAllGroupEvents();
+      setGroupEvents(events);
+    };
+
+    fetchEvents();
+  }, [groupId]);
+
+  console.log(groupEvents)
+  // console.log(GROUP_OBJ)
   return (
     <div className="flex flex-col gap-5 w-[92%] mx-auto">
       <div className="flex w-full m-auto justify-center items-center">
@@ -38,24 +65,34 @@ const Group: NextPage = () => {
           <h1 className="text-primary-text-color">{searchParams}</h1>
           <div className="flex gap-[1vh] justify-center items-center absolute right-0">
             <div className="bg-primary-text-color rounded-full flex justify-center items-center w-[4vh] h-[4vh[">
-              <Image alt="new members" width={0} height={0} className="w-[4vh] h-[4vh[" src={"/images/add-new.png"}></Image>
+              <Image
+                alt="new members"
+                width={0}
+                height={0}
+                className="w-[4vh] h-[4vh["
+                src={"/images/add-new.png"}
+              ></Image>
             </div>
           </div>
         </div>
       </div>
-
-      <GroupEventCard group={GROUP_OBJ[currentGlobalEvent]} />
       <div className="flex w-full justify-between">
         <EventDecisionButton />
       </div>
-      <UpcomingDwadlesButton groups={GROUP_OBJ}/>
-      <Link href="/events/create">
-        <button className="font-[900] bg-primar">
-          event +
-        </button>
+      <UpcomingDwadlesButton groups={groupEvents} />
+      <Link
+        href={{
+          pathname: "events/create/[id]",
+          query: {
+            id: groupId,
+          },
+        }}
+        as={`/events/create/${groupId}`}
+      >
+        <button className="font-[900] bg-primar">event +</button>
       </Link>
     </div>
   );
-}
+};
 
 export default Group;
