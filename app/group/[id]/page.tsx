@@ -1,54 +1,81 @@
 "use client";
 import type { NextPage } from "next";
 import GroupEventCard from "../../components/GroupEventCard";
-import EventDecisionButton from "../../components/EventChoiceButton";
+import EventDecisionButton from "../../components/EventDecisionButton";
 import UpcomingDwadlesButton from "../../components/UpcomingDwadlesButton";
-import { usePathname, useSearchParams } from "next/navigation";
+import { redirect, usePathname, useSearchParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { query, collection, getDocs } from "firebase/firestore";
+import { query, collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { firestore } from "@/lib/firebase/config";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { selectUser } from "@/lib/store/userSlice";
+import CreateEventModal from "@/app/components/Modals/CreateEventModal";
+import SingleEventModal from "@/app/components/Modals/SingleEventModal";
+
+interface Event {
+  address: string;
+  participants: string[]; // Assuming participants is an array of strings (user IDs, for example)
+  title: string;
+  type: string;
+  name: string;
+}
+
+interface Group {
+  name: string;
+  author: string;
+  events: Event[];
+  secret_key: string;
+  date: string;
+  time: string;
+  groupImgSrc: string;
+}
 
 const Group: NextPage = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  console.log("Pathname: ", pathname);
+
   const groupId = pathname.split("/").pop();
-  console.log("groupId: ", groupId);
-  const [groupEvents, setGroupEvents] = useState<any[]>([]);
+  // const [group, setGroup] = useState({});
+  const [group, setGroup] = useState<Group>({
+    name: "",
+    author: "",
+    events: [],
+    secret_key: "",
+    date: "",
+    time: "",
+    groupImgSrc: "",
+  });
 
   const user = useSelector(selectUser);
 
-  const getAllGroupEvents = async () => {
-    const eventsRef = query(collection(firestore, "events"));
-    const events = await getDocs(eventsRef);
+  const getGroupByGroupId = async () => {
+    const groupRef = doc(firestore, "groups", `${groupId}`);
+    const groupSnap = await getDoc(groupRef);
 
-    const eventList: any = [];
-    console.log("Event list Before: ", eventList);
-
-    events.forEach((event: any) => {
-      eventList.push(event.data());
-    });
-
-    console.log("Event list After: ", eventList);
-
-    return eventList;
+    if (groupSnap.exists()) {
+      const data = groupSnap.data();
+      return data;
+    } else {
+      return redirect("/");
+    }
   };
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      const events = await getAllGroupEvents();
-      setGroupEvents(events);
+    const fetchGroup = async () => {
+      const groupData = await getGroupByGroupId();
+      console.log("group data in use effect", groupData);
+      setGroup(groupData);
     };
 
-    fetchEvents();
+    fetchGroup();
   }, [groupId]);
+  console.log("Group: ", group);
+  console.log("Group: ", user);
 
-  console.log(groupEvents)
-  // console.log(GROUP_OBJ)
+  if (!user) redirect("/");
+
   return (
     <div className="flex flex-col gap-5 w-[92%] mx-auto">
       <div className="flex w-full m-auto justify-center items-center">
@@ -62,7 +89,7 @@ const Group: NextPage = () => {
           />
         </Link>
         <div className="relative flex w-full justify-around  items-center text-center text-[3vh] p-[0.5vh] rounded-[1vh] my-[2vh]">
-          <h1 className="text-primary-text-color">{searchParams}</h1>
+          <h1 className="text-primary-text-color">{group.name}</h1>
           <div className="flex gap-[1vh] justify-center items-center absolute right-0">
             <div className="bg-primary-text-color rounded-full flex justify-center items-center w-[4vh] h-[4vh[">
               <Image
@@ -77,20 +104,19 @@ const Group: NextPage = () => {
         </div>
       </div>
       <div className="flex w-full justify-between">
-        <EventDecisionButton />
+        <EventDecisionButton event={event}/>
       </div>
-      <UpcomingDwadlesButton groups={groupEvents} />
-      <Link
-        href={{
-          pathname: "events/create/[id]",
-          query: {
-            id: groupId,
-          },
-        }}
-        as={`/events/create/${groupId}`}
-      >
-        <button className="font-[900] bg-primar">event +</button>
-      </Link>
+      {group.events.map((event) => {
+        return (
+          <div className="flex justify-between">
+            <SingleEventModal event={event} />
+            <div>
+              <EventDecisionButton event={event}/>
+            </div>
+          </div>
+        );
+      })}
+      <CreateEventModal />
     </div>
   );
 };

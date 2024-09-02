@@ -2,13 +2,28 @@
 
 import React, { useState } from "react";
 
-// interface EventDecisionButtonProps {
-//   choice: boolean;
-// }
+interface EventProps {
+  title: string;
+  address: string;
+  date: string;
+  time: string;
+  type: string;
+  participants: string[];
+  groupImgSrc: string;
+}
 
-export default function EventDecisionButton() {
+interface EventDecisionButtonProps {
+  // choice: boolean;
+  event: EventProps
+}
+
+export default function EventDecisionButton({ event }:EventDecisionButtonProps) {
   const [active, setActive] = useState(false);
   const [decision, setDecision] = useState(true);
+
+  console.log("event in decisions component", event)
+
+  
 
   const handleChoice = (decision: boolean) => {
     setDecision(decision);

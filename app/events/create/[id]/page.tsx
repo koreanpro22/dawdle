@@ -23,7 +23,6 @@ export default function EventCreate() {
       date: e.currentTarget.date.value,
       time: e.currentTarget.time.value,
       type: e.currentTarget.type.value,
-
       // groupId: 
     };
 
@@ -38,7 +37,7 @@ export default function EventCreate() {
 
     createEvent();
 
-    
+
   };
 
   return (

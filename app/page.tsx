@@ -12,6 +12,7 @@ import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import { redirect } from "next/navigation";
 
 type Group = {
   id: string;
@@ -342,6 +343,11 @@ export default function Landing() {
   const handleAdd = () => setAdd(true);
   const handleJoinModal = () => setJoinModal(!joinModal);
   const handleCreateModal = () => setCreateModal(!createModal);
+  const handleGroupClick = (groupId: string) => {
+    // alert('Hitting handle group click')
+    console.log('hitting handle group click')
+    redirect(`/group/${groupId}`)
+  }
 
   if (user) {
     return (
@@ -349,8 +355,8 @@ export default function Landing() {
         <div className="flex-1 w-[92.5%]">
           <div className="flex flex-col gap-[2vh]">
             {userGroups?.map((group) => (
-              <button className="bg-[#8A58FF] rounded-[1vh] p-[1vh] relative">
-                <div className="flex items-center gap-[1vh]">
+              <button className="bg-[#8A58FF] rounded-[1vh] p-[1vh] relative" >
+                <div className="flex items-center gap-[1vh]" onClick={() => handleGroupClick(group.id)}>
                 {group.imageUrl ? (
                   <Image
                     src={group.imageUrl}
