@@ -20,6 +20,9 @@ interface Event {
   title: string;
   type: string;
   name: string;
+  date: string;
+  time: string;
+  groupImgSrc: string;
 }
 
 interface Group {
@@ -27,9 +30,8 @@ interface Group {
   author: string;
   events: Event[];
   secret_key: string;
-  date: string;
-  time: string;
-  groupImgSrc: string;
+  members: string[];
+  imageUrl: string;
 }
 
 const Group: NextPage = () => {
@@ -43,9 +45,8 @@ const Group: NextPage = () => {
     author: "",
     events: [],
     secret_key: "",
-    date: "",
-    time: "",
-    groupImgSrc: "",
+    members: [],
+    imageUrl: "",
   });
 
   const user = useSelector(selectUser);
@@ -65,21 +66,19 @@ const Group: NextPage = () => {
   useEffect(() => {
     const fetchGroup = async () => {
       const groupData = await getGroupByGroupId();
-      console.log("group data in use effect", groupData);
+      console.log("group data: ", groupData)
       setGroup(groupData);
     };
 
     fetchGroup();
   }, [groupId]);
-  console.log("Group: ", group);
-  console.log("Group: ", user);
 
   if (!user) redirect("/");
 
   return (
     <div className="flex flex-col gap-5 w-[92%] mx-auto">
       <div className="flex w-full m-auto justify-center items-center">
-        <Link href="/dashboard">
+        <Link href="/">
           <Image
             alt="eye"
             src={"/images/arrow-right-solid.svg"}
@@ -104,14 +103,15 @@ const Group: NextPage = () => {
         </div>
       </div>
       <div className="flex w-full justify-between">
-        <EventDecisionButton event={event}/>
+        {/* <EventDecisionButton event={event}/> */}
       </div>
-      {group.events.map((event) => {
+      {group.events.map((event, index) => {
+        console.log("e + i ===> ", event, index)
         return (
           <div className="flex justify-between">
             <SingleEventModal event={event} />
             <div>
-              <EventDecisionButton event={event}/>
+              <EventDecisionButton event={event} eventIndex={index} />
             </div>
           </div>
         );

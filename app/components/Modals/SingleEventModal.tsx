@@ -16,11 +16,13 @@ const style = {
   p: 4,
 };
 interface Event {
-  address: string;
-  participants: string[];
   title: string;
+  address: string;
+  date: string;
+  time: string;
   type: string;
-  name: string;
+  participants: string[];
+  groupImgSrc: string;
 }
 
 interface SingleEventModalProps {

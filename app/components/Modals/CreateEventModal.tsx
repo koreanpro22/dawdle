@@ -6,6 +6,8 @@ import Modal from "@mui/material/Modal";
 import { doc, getDoc, addDoc, setDoc, collection, updateDoc, arrayUnion } from "firebase/firestore";
 import { firestore } from "@/lib/firebase/config";
 import { redirect, usePathname } from "next/navigation";
+import { useSelector } from "react-redux";
+import { selectUser } from "@/lib/store/userSlice";
 
 const style = {
   position: "absolute" as "absolute",
@@ -25,9 +27,11 @@ interface FormData {
   date: string;
   time: string;
   type: string;
+  participants: string[];
 }
 
 export default function CreateEventModal() {
+  const user = useSelector(selectUser)
   const pathname = usePathname();
   const groupId = pathname.split("/").pop();
   const [open, setOpen] = React.useState(false);
@@ -40,7 +44,8 @@ export default function CreateEventModal() {
       address: e.currentTarget.address.value,
       date: e.currentTarget.date.value,
       time: e.currentTarget.time.value,
-      type: e.currentTarget.type.value
+      type: e.currentTarget.type.value,
+      participants: [`${user.id}`]
     };
 
     console.log("Form Data:", formData);

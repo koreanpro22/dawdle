@@ -25,7 +25,7 @@ export default function UpcomingDwadlesButton({ events }: Events) {
   // const [activeGroupIndex, setActiveGroupIndex] = useState<number | null>(null);
   const dispatch = useDispatch();
 
-  console.log('events in upcoming dawdles button: ', events)
+  // console.log('events in upcoming dawdles button: ', events)
 
   // const [active, setActive] = useState<boolean[]>(
   //   new Array(groups.length).fill(true)
