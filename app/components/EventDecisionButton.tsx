@@ -146,7 +146,7 @@ export default function EventDecisionButton({
 
         // Delete the specific event by filtering it out
         const updatedEvents = events.filter(
-          (_:any, index: number) => index !== eventIndex
+          (_: any, index: number) => index !== eventIndex
         );
 
         console.log("events after deletion", updatedEvents);
@@ -168,44 +168,49 @@ export default function EventDecisionButton({
       <div>
         {event.participants[0]?.id == user.id ? (
           <div className="flex justify-around items-center w-full">
-            <button className="bg-primary-accent-color w-min rounded-[4vh] p-5">
-              <div
+            <button
+              onClick={handleDelete}
+              className="bg-primary-accent-color w-min rounded-[4vh] px-[2vh] py-[2vh]"
+            >
+              {/* <div
                 onClick={handleDelete}
                 className={`bg-[#E9C0E9] rounded-full w-min p-[2vh] text-[6vh]`}
               >
                 👎
-              </div>
-              <p className="text-primary-text-color text-3xl font-[800] pt-5 text-nowrap">
+              </div> */}
+              <p className="text-primary-text-color text-[3vh] font-bold text-nowrap">
                 Delete Event
               </p>
             </button>
           </div>
         ) : !event.participants.some(participant => participant.id === user.id) ? (
           <div className="flex justify-around items-center w-full">
-            <button className="bg-primary-accent-color w-min rounded-[4vh] p-5">
-              <div
-                onClick={handleJoin}
-                className={`bg-[#D2E823] rounded-full w-min p-[2vh] text-[6vh]`}
-              >
-                👋
-              </div>
-              <p className="text-primary-text-color text-3xl font-[800] pt-5 text-nowrap">
-                Join In
-              </p>
-            </button>
+            <div
+              onClick={handleJoin}
+              className={`bg-[#ffffff] rounded-full w-min p-[2vh] text-[6vh]`}
+            >
+              👋
+            </div>
+
+            <div
+              onClick={handleLeave}
+              className={`bg-[#ffffff] rounded-full w-min p-[2vh] text-[6vh]`}
+            >
+              👎
+            </div>
           </div>
         ) : (
           <div className="flex justify-around items-center w-full">
-            <button className="bg-primary-accent-color w-min rounded-[4vh] p-5">
-              <div
-                onClick={handleLeave}
-                className={`bg-[#E9C0E9] rounded-full w-min p-[2vh] text-[6vh]`}
-              >
-                👎
-              </div>
-              <p className="text-primary-text-color text-3xl font-[800] pt-5 text-nowrap">
-                Leave Event
-              </p>
+            <button className="bg-[#FFCD80] w-min rounded-[4vh] p-5">
+              {!event.participants.some(participant => participant.id === user.id) ? (
+                <p onClick={handleLeave} className="text-[#360F50] text-[3vh] font-bold text-nowrap">
+                  holding off
+                </p>
+              ) : (
+                <p onClick={handleLeave} className="text-[#360F50] text-[3vh] font-bold text-nowrap">
+                  you are joining
+                </p>
+              )}
             </button>
           </div>
         )}
