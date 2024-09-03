@@ -2,19 +2,10 @@ import * as React from "react";
 import Image from "next/image";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
-import {
-  doc,
-  getDoc,
-  addDoc,
-  setDoc,
-  collection,
-  updateDoc,
-  arrayUnion,
-} from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { firestore } from "@/lib/firebase/config";
-import { redirect, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/lib/store/userSlice";
 
@@ -30,13 +21,19 @@ const style = {
   p: 4,
 };
 
+interface Participant {
+  id: string;
+  email: string;
+}
+
 interface FormData {
   title: string;
   address: string;
   date: string;
   time: string;
   type: string;
-  participants: string[];
+  itinerary: string;
+  participants: Participant[];
 }
 
 interface Group {
@@ -61,26 +58,30 @@ export default function CreateEventModal({ group }: Props) {
   const handleClose = () => setOpen(false);
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     const formData: FormData = {
       title: e.currentTarget.title.value,
       address: e.currentTarget.address.value,
       date: e.currentTarget.date.value,
       time: e.currentTarget.time.value,
       type: e.currentTarget.type.value,
-      participants: [`${user.id}`],
+      itinerary: e.currentTarget.itinerary.value,
+      participants: [{ id: user.id, email: user.email }],
     };
 
     console.log("Form Data:", formData);
+
     const createEvent = async () => {
       alert("hitting create event");
       const groupRef = doc(firestore, "groups", `${groupId}`);
       const groupSnap = await getDoc(groupRef);
       console.log("groupRef: ", groupRef);
       console.log("groupSnap Data: ", groupSnap.data());
-      //   setDoc(groupRef, { events: [..., formData]})
+
       await updateDoc(groupRef, {
         events: arrayUnion(formData),
       });
+      handleClose();
     };
 
     createEvent();
@@ -138,6 +139,10 @@ export default function CreateEventModal({ group }: Props) {
               className="flex flex-col gap-[2vh] w-[70%] m-auto"
               onSubmit={handleSubmit}
             >
+              {/* <button
+              type="submit"
+              className="bg-secondary-accent-color w-full rounded-full p-[1vh]"
+            > */}
               <div className="flex flex-col gap-3">
                 <label
                   className="text-[2vh] text-[#000000] font-bold lowercase"
@@ -220,6 +225,15 @@ export default function CreateEventModal({ group }: Props) {
                 </select>
               </div>
 
+              <div className="flex flex-col gap-3">
+                <label htmlFor="itinerary">Event Itinerary</label>
+                <textarea
+                  className="outline-none transition-colors ease-in-out duration-300 hover:bg-[#9B7AFF] focus:bg-[#9B7AFF] placeholder:text-white text-white bg-[#8A58FF] w-full rounded-[1vh] p-[1.5vh]"
+                  name="itinerary"
+                  rows={4}
+                ></textarea>
+              </div>
+
               <button
                 type="submit"
                 className="bg-white w-full rounded-[1vh] p-[1vh]"
@@ -228,6 +242,7 @@ export default function CreateEventModal({ group }: Props) {
                   create event
                 </h1>
               </button>
+              {/* </button> */}
             </form>
           </div>
         </div>

@@ -16,14 +16,19 @@ const style = {
   boxShadow: 24,
   p: 4,
 };
+interface Participant {
+  id: string;
+  email: string;
+}
+
 interface Event {
   title: string;
   address: string;
   date: string;
   time: string;
   type: string;
-  participants: string[];
-  groupImgSrc: string;
+  itinerary: string;
+  participants: Participant[];
 }
 
 interface SingleEventModalProps {
@@ -100,6 +105,11 @@ export default function SingleEventModal({ event }: SingleEventModalProps) {
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
             <span>
               {event.type} at {event.address}
+            </span>
+          </Typography>
+          <Typography id="modal-modal-itinerary" sx={{ mt: 2 }}>
+            <span>
+              {event.itinerary}
             </span>
           </Typography>
         </Box>

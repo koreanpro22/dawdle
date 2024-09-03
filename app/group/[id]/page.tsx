@@ -1,29 +1,33 @@
 "use client";
 import type { NextPage } from "next";
-import { useRef } from "react";
-import GroupEventCard from "../../components/GroupEventCard";
+// import GroupEventCard from "../../components/GroupEventCard";
 import EventDecisionButton from "../../components/EventDecisionButton";
-import UpcomingDwadlesButton from "../../components/UpcomingDwadlesButton";
-import { redirect, usePathname, useSearchParams } from "next/navigation";
-import { useSelector, useDispatch } from "react-redux";
-import { query, collection, getDocs, doc, getDoc } from "firebase/firestore";
+// import UpcomingDwadlesButton from "../../components/UpcomingDwadlesButton";
+import { redirect, usePathname} from "next/navigation";
+import { useSelector} from "react-redux";
+import { doc, onSnapshot, getDoc } from "firebase/firestore";
 import { firestore } from "@/lib/firebase/config";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { selectUser } from "@/lib/store/userSlice";
 import CreateEventModal from "@/app/components/Modals/CreateEventModal";
 import SingleEventModal from "@/app/components/Modals/SingleEventModal";
+import EditEventModal from "@/app/components/Modals/EditEventModal";
+
+interface Participant {
+  id: string;
+  email: string;
+}
 
 interface Event {
-  address: string;
-  participants: string[]; // Assuming participants is an array of strings (user IDs, for example)
   title: string;
-  type: string;
-  name: string;
+  address: string;
   date: string;
   time: string;
-  groupImgSrc: string;
+  type: string;
+  itinerary: string;
+  participants: Participant[];
 }
 
 interface Group {
@@ -38,10 +42,7 @@ interface Group {
 const Group: NextPage = () => {
   const [openInviteModal, setOpenInviteModal] = useState(false);
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-
   const groupId = pathname.split("/").pop();
-  // const [group, setGroup] = useState({});
   const [group, setGroup] = useState<Group>({
     name: "",
     author: "",
@@ -91,8 +92,34 @@ const Group: NextPage = () => {
       console.log("group data: ", groupData);
       setGroup(groupData);
     };
+  }, []);
 
-    fetchGroup();
+  useEffect(() => {
+    if (!groupId) return;
+
+    const groupRef = doc(firestore, "groups", groupId as string);
+    
+    const unsubscribe = onSnapshot(groupRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        const groupData: Group = {
+          name: data.name || "",
+          author: data.author || "",
+          events: data.events || [],
+          secret_key: data.secret_key || "",
+          members: data.members || [],
+          imageUrl: data.imageUrl || "",
+        };
+        setGroup(groupData);
+      } else {
+        redirect("/");
+      }
+    }, (error) => {
+      console.error("Error fetching group data: ", error);
+      redirect("/");
+    });
+
+    return () => unsubscribe();
   }, [groupId]);
 
   if (!user) redirect("/");
@@ -162,6 +189,9 @@ const Group: NextPage = () => {
                 <SingleEventModal event={event} />
                 <div>
                   <EventDecisionButton event={event} eventIndex={index} />
+                  {event.participants[0]?.id === user.id && (
+              <EditEventModal event={event} eventIndex={index} />
+            )}
                 </div>
               </div>
             );
@@ -169,7 +199,7 @@ const Group: NextPage = () => {
           <div className="flex flex-col gap-[1vh] justify-center items-center">
             <CreateEventModal group={group} />
 
-            {group?.members?.length < 1 ? (
+            {group?.members?.length > 1 ? (
               <></>
             ) : (
               <div className="flex gap-[1vh]">
