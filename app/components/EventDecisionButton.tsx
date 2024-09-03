@@ -16,8 +16,8 @@ interface EventProps {
   date: string;
   time: string;
   type: string;
+  itinerary: string;
   participants: Participant[];
-  groupImgSrc: string;
 }
 
 interface EventDecisionButtonProps {

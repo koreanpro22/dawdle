@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { selectUser } from "@/lib/store/userSlice";
 import CreateEventModal from "@/app/components/Modals/CreateEventModal";
 import SingleEventModal from "@/app/components/Modals/SingleEventModal";
+import EditEventModal from "@/app/components/Modals/EditEventModal";
 
 interface Participant {
   id: string;
@@ -20,14 +21,13 @@ interface Participant {
 }
 
 interface Event {
-  address: string;
-  participants: Participant[];
   title: string;
-  type: string;
-  name: string;
+  address: string;
   date: string;
   time: string;
-  groupImgSrc: string;
+  type: string;
+  itinerary: string;
+  participants: Participant[];
 }
 
 interface Group {
@@ -120,6 +120,9 @@ const Group: NextPage = () => {
             <SingleEventModal event={event} />
             <div>
               <EventDecisionButton event={event} eventIndex={index} />
+              {event.participants[0]?.id === user.id && (
+              <EditEventModal event={event} eventIndex={index} />
+            )}
             </div>
           </div>
         );

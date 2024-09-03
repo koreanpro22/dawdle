@@ -31,6 +31,7 @@ interface FormData {
   date: string;
   time: string;
   type: string;
+  itinerary: string;
   participants: Participant[];
 }
 
@@ -50,6 +51,7 @@ export default function CreateEventModal() {
       date: e.currentTarget.date.value,
       time: e.currentTarget.time.value,
       type: e.currentTarget.type.value,
+      itinerary: e.currentTarget.itinerary.value,
       participants: [{ id: user.id, email: user.email }],
     };
 
@@ -140,6 +142,14 @@ export default function CreateEventModal() {
                 <option value="food">Restaurant</option>
                 <option value="park">Park</option>
               </select>
+            </div>
+            <div className="flex flex-col gap-3">
+              <label htmlFor="itinerary">Event Itinerary</label>
+              <textarea
+                className="outline-none transition-colors ease-in-out duration-300 hover:bg-hover-color focus:bg-hover-color px-5 placeholder:text-black bg-secondary-accent-color w-full rounded p-[1vh]"
+                name="itinerary"
+                rows={4}
+              ></textarea>
             </div>
 
             <button

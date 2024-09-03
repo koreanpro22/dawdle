@@ -21,14 +21,13 @@ interface Participant {
 }
 
 interface Event {
-  address: string;
-  participants: Participant[];
   title: string;
-  type: string;
-  name: string;
+  address: string;
   date: string;
   time: string;
-  groupImgSrc: string;
+  type: string;
+  itinerary: string;
+  participants: Participant[];
 }
 
 interface SingleEventModalProps {
@@ -66,6 +65,11 @@ export default function SingleEventModal({ event }: SingleEventModalProps) {
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
             <span>
               {event.type} at {event.address}
+            </span>
+          </Typography>
+          <Typography id="modal-modal-itinerary" sx={{ mt: 2 }}>
+            <span>
+              {event.itinerary}
             </span>
           </Typography>
         </Box>
