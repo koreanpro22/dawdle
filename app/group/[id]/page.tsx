@@ -16,7 +16,7 @@ import SingleEventModal from "@/app/components/Modals/SingleEventModal";
 
 interface Event {
   address: string;
-  participants: string[]; // Assuming participants is an array of strings (user IDs, for example)
+  participants: string[]; 
   title: string;
   type: string;
   name: string;

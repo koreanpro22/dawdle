@@ -21,13 +21,18 @@ const style = {
   p: 4,
 };
 
+interface Participant {
+  id: string;
+  email: string;
+}
+
 interface FormData {
   title: string;
   address: string;
   date: string;
   time: string;
   type: string;
-  participants: string[];
+  participants: Participant[];
 }
 
 export default function CreateEventModal() {
@@ -39,13 +44,14 @@ export default function CreateEventModal() {
   const handleClose = () => setOpen(false);
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
     const formData: FormData = {
       title: e.currentTarget.title.value,
       address: e.currentTarget.address.value,
       date: e.currentTarget.date.value,
       time: e.currentTarget.time.value,
       type: e.currentTarget.type.value,
-      participants: [`${user.id}`]
+      participants: [{ id: user.id, email: user.email }],
     };
 
     console.log("Form Data:", formData);

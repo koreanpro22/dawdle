@@ -6,14 +6,17 @@ import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 import { UseSelector, useSelector } from "react-redux";
-
+interface Participant {
+  id: string;
+  email: string;
+}
 interface EventProps {
   title: string;
   address: string;
   date: string;
   time: string;
   type: string;
-  participants: string[];
+  participants: Participant[];
   groupImgSrc: string;
 }
 
@@ -45,40 +48,55 @@ export default function EventDecisionButton({
   };
 
   const handleJoin = async () => {
-    // alert("hitting join");
     const addUserToEvent = async () => {
       const groupRef = doc(firestore, "groups", `${groupId}`);
       const groupSnap = await getDoc(groupRef);
-
+  
       if (groupSnap.exists()) {
         const groupData = groupSnap.data();
-
+  
         // Ensure the events array exists
         const events = groupData.events || [];
         console.log("events in join ", events);
-
+  
         // Add the user to the specific event's participants array
         if (events[eventIndex]) {
-          // events[eventIndex].participants = arrayUnion(user.id);
-          events[eventIndex].participants.push(user.id);
+          // Create the participant object
+          const participant = {
+            id: user.id,
+            email: user.email,
+          };
+  
+          // Check if the user is already a participant to avoid duplicates
+          const isAlreadyParticipant = events[eventIndex].participants.some(
+            (p: Participant) => p.id === user.id
+          );
+  
+          if (!isAlreadyParticipant) {
+            // Push the participant object
+            events[eventIndex].participants.push(participant);
+  
+            // Update the document with the modified events array
+            await updateDoc(groupRef, {
+              events: events,
+            });
+  
+            console.log("User added to event:", participant);
+          } else {
+            console.log("User is already a participant in the event");
+          }
         } else {
           console.error("Event not found at the specified index");
           return;
         }
-
-        // Update the document with the modified events array
-        const res = await updateDoc(groupRef, {
-          events: events,
-        });
-
-        console.log(res)
       } else {
         console.error("Group document not found");
       }
     };
-
+  
     addUserToEvent();
   };
+
 
   const handleLeave = async () => {
     const removeUserFromEvent = async () => {
@@ -94,10 +112,8 @@ export default function EventDecisionButton({
 
         // Remove the user from the specific event's participants array
         if (events[eventIndex]) {
-          events[eventIndex].participants = events[
-            eventIndex
-          ].participants.filter(
-            (participant: string) => participant !== user.id
+          events[eventIndex].participants = events[eventIndex].participants.filter(
+            (participant: Participant) => participant.id !== user.id
           );
         } else {
           console.error("Event not found at the specified index");
@@ -115,6 +131,7 @@ export default function EventDecisionButton({
 
     removeUserFromEvent();
   };
+
   const handleDelete = async () => {
     const deleteEventFromGroup = async () => {
       const groupRef = doc(firestore, "groups", `${groupId}`);
@@ -149,7 +166,7 @@ export default function EventDecisionButton({
   return (
     <>
       <div>
-        {event.participants[0] == user.id ? (
+        {event.participants[0]?.id == user.id ? (
           <div className="flex justify-around items-center w-full">
             <button className="bg-primary-accent-color w-min rounded-[4vh] p-5">
               <div
@@ -163,7 +180,7 @@ export default function EventDecisionButton({
               </p>
             </button>
           </div>
-        ) : !event.participants.includes(user.id) ? (
+        ) : !event.participants.some(participant => participant.id === user.id) ? (
           <div className="flex justify-around items-center w-full">
             <button className="bg-primary-accent-color w-min rounded-[4vh] p-5">
               <div
