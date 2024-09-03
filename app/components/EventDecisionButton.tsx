@@ -202,8 +202,8 @@ export default function EventDecisionButton({
         ) : (
           <div className="flex justify-around items-center w-full">
             <button className="bg-[#FFCD80] w-min rounded-[4vh] p-5">
-              {!event.participants.includes(user.id) ? (
-                <p className="text-[#360F50] text-[3vh] font-bold text-nowrap">
+              {!event.participants.some(participant => participant.id === user.id) ? (
+                <p onClick={handleLeave} className="text-[#360F50] text-[3vh] font-bold text-nowrap">
                   holding off
                 </p>
               ) : (
