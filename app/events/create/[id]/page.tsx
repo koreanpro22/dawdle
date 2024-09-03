@@ -3,6 +3,7 @@ import { firestore } from "@/lib/firebase/config";
 import { collection, addDoc } from "firebase/firestore";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 interface FormData {
   title: string;

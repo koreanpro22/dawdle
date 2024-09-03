@@ -1,11 +1,11 @@
 "use client";
 import type { NextPage } from "next";
-import GroupEventCard from "../../components/GroupEventCard";
+// import GroupEventCard from "../../components/GroupEventCard";
 import EventDecisionButton from "../../components/EventDecisionButton";
-import UpcomingDwadlesButton from "../../components/UpcomingDwadlesButton";
-import { redirect, usePathname, useSearchParams } from "next/navigation";
-import { useSelector, useDispatch } from "react-redux";
-import { query, collection, getDocs, doc, getDoc } from "firebase/firestore";
+// import UpcomingDwadlesButton from "../../components/UpcomingDwadlesButton";
+import { redirect, usePathname} from "next/navigation";
+import { useSelector} from "react-redux";
+import { doc, onSnapshot } from "firebase/firestore";
 import { firestore } from "@/lib/firebase/config";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,9 +14,14 @@ import { selectUser } from "@/lib/store/userSlice";
 import CreateEventModal from "@/app/components/Modals/CreateEventModal";
 import SingleEventModal from "@/app/components/Modals/SingleEventModal";
 
+interface Participant {
+  id: string;
+  email: string;
+}
+
 interface Event {
   address: string;
-  participants: string[]; 
+  participants: Participant[];
   title: string;
   type: string;
   name: string;
@@ -36,10 +41,7 @@ interface Group {
 
 const Group: NextPage = () => {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-
   const groupId = pathname.split("/").pop();
-  // const [group, setGroup] = useState({});
   const [group, setGroup] = useState<Group>({
     name: "",
     author: "",
@@ -51,26 +53,32 @@ const Group: NextPage = () => {
 
   const user = useSelector(selectUser);
 
-  const getGroupByGroupId = async () => {
-    const groupRef = doc(firestore, "groups", `${groupId}`);
-    const groupSnap = await getDoc(groupRef);
-
-    if (groupSnap.exists()) {
-      const data = groupSnap.data();
-      return data;
-    } else {
-      return redirect("/");
-    }
-  };
-
   useEffect(() => {
-    const fetchGroup = async () => {
-      const groupData = await getGroupByGroupId();
-      console.log("group data: ", groupData)
-      setGroup(groupData);
-    };
+    if (!groupId) return;
 
-    fetchGroup();
+    const groupRef = doc(firestore, "groups", groupId as string);
+    
+    const unsubscribe = onSnapshot(groupRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        const groupData: Group = {
+          name: data.name || "",
+          author: data.author || "",
+          events: data.events || [],
+          secret_key: data.secret_key || "",
+          members: data.members || [],
+          imageUrl: data.imageUrl || "",
+        };
+        setGroup(groupData);
+      } else {
+        redirect("/");
+      }
+    }, (error) => {
+      console.error("Error fetching group data: ", error);
+      redirect("/");
+    });
+
+    return () => unsubscribe();
   }, [groupId]);
 
   if (!user) redirect("/");

@@ -1,11 +1,10 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
-import { doc, getDoc, addDoc, setDoc, collection, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { firestore } from "@/lib/firebase/config";
-import { redirect, usePathname } from "next/navigation";
+import {  usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/lib/store/userSlice";
 
@@ -61,10 +60,11 @@ export default function CreateEventModal() {
       const groupSnap = await getDoc(groupRef)
       console.log('groupRef: ', groupRef)
       console.log('groupSnap Data: ', groupSnap.data())
-    //   setDoc(groupRef, { events: [..., formData]})
+
         await updateDoc(groupRef, {
             events: arrayUnion(formData),
         })
+        handleClose()
     };
 
     createEvent();

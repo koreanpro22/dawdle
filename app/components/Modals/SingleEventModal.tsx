@@ -15,13 +15,19 @@ const style = {
   boxShadow: 24,
   p: 4,
 };
+interface Participant {
+  id: string;
+  email: string;
+}
+
 interface Event {
-  title: string;
   address: string;
+  participants: Participant[];
+  title: string;
+  type: string;
+  name: string;
   date: string;
   time: string;
-  type: string;
-  participants: string[];
   groupImgSrc: string;
 }
 

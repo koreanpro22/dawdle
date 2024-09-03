@@ -2,10 +2,10 @@
 
 import { firestore } from "@/lib/firebase/config";
 import { selectUser } from "@/lib/store/userSlice";
-import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { usePathname } from "next/navigation";
 import React, { useState } from "react";
-import { UseSelector, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 interface Participant {
   id: string;
   email: string;
