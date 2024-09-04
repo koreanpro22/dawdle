@@ -31,7 +31,7 @@ export default function UpcomingDwadlesButton({ events }: UpcomingDwadlesButtonP
   return (
     <div className="flex flex-col justify-around items-center w-full gap-[1vh] pt-[10vh]">
       <h1 className="text-primary-accent-color text-start w-full text-[2.5vh] font-[900]">
-        Upcoming Dwadles 🦆🐤
+        Upcoming Dawdles 🦆🐤
       </h1>
       {events.filter(event => curEvent && event.title !== curEvent.title).map((event, index) => (
         <div 
