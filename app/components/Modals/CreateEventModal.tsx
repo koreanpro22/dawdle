@@ -275,7 +275,9 @@ export default function CreateEventModal({ group }: Props) {
               </div>
 
               <div className="flex flex-col gap-3">
-                <label htmlFor="itinerary">Event Itinerary</label>
+                <label 
+                                  className="text-[2vh] text-[#000000] font-bold lowercase"
+                htmlFor="itinerary">Event Itinerary</label>
                 <textarea
                   className="outline-none transition-colors ease-in-out duration-300 hover:bg-[#9B7AFF] focus:bg-[#9B7AFF] placeholder:text-white text-white bg-[#8A58FF] w-full rounded-[1vh] p-[1.5vh]"
                   name="itinerary"
@@ -291,16 +293,20 @@ export default function CreateEventModal({ group }: Props) {
               ) :(
               <button
                 type="button"
-                  className={`lowercase rounded-[4vh] px-[2vh] py-[2vh] text-[3vh] font-bold mb-[2vh] w-[10vw] self-center transition-colors ease-in-out duration-300 ${
-                    isButtonDisabled
-                      ? "bg-gray-400"
-                      : "bg-[#9B7AFF] hover:bg-[#7a4cc0]"
-                  }`}
+                className={`lowercase rounded-[4vh] px-[2vh] py-[2vh] text-[3vh] font-bold mb-[2vh] w-[10vw] self-center transition-colors ease-in-out duration-300 ${
+                  isButtonDisabled
+                      ? "bg-gray-400 w-full rounded-[1vh] p-[1vh] transition-all ease-in-out"
+                      : "group hover:bg-[#8A58FF] bg-white w-full rounded-[1vh] p-[1vh] transition-all ease-in-out"
+                    }`}
                 onClick={handleGenerateItinerary}
                 disabled={isButtonDisabled}
                 title={isButtonDisabled ? `Missing fields: ${missingFields.join(', ')}` : ""}
               >
+                              <h1 className="group-hover:text-[#fff]">
+
                 Generate
+                </h1>
+
               </button>
               )}
               <button

@@ -2,14 +2,15 @@
 import type { NextPage } from "next";
 // import GroupEventCard from "../../components/GroupEventCard";
 import EventDecisionButton from "../../components/EventDecisionButton";
-// import UpcomingDwadlesButton from "../../components/UpcomingDwadlesButton";
-import { redirect, usePathname} from "next/navigation";
-import { useSelector} from "react-redux";
+import UpcomingDwadlesButton from "../../components/UpcomingDwadlesButton";
+import { redirect, usePathname } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
 import { doc, onSnapshot, getDoc } from "firebase/firestore";
 import { firestore } from "@/lib/firebase/config";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
+import { setCurEvent, selectCurEvent } from "@/lib/store/curEventSlice";
 import { selectUser } from "@/lib/store/userSlice";
 import CreateEventModal from "@/app/components/Modals/CreateEventModal";
 import SingleEventModal from "@/app/components/Modals/SingleEventModal";
@@ -40,6 +41,7 @@ interface Group {
 }
 
 const Group: NextPage = () => {
+  const dispatch = useDispatch();
   const [openInviteModal, setOpenInviteModal] = useState(false);
   const pathname = usePathname();
   const groupId = pathname.split("/").pop();
@@ -53,6 +55,7 @@ const Group: NextPage = () => {
   });
 
   const user = useSelector(selectUser);
+  const curEvent = useSelector(selectCurEvent);
 
   const secretKeyRef = useRef(null);
 
@@ -69,7 +72,6 @@ const Group: NextPage = () => {
     }
   };
 
-
   const showInviteModal = () => {
     setOpenInviteModal(!openInviteModal);
   };
@@ -80,26 +82,31 @@ const Group: NextPage = () => {
     if (!groupId) return;
 
     const groupRef = doc(firestore, "groups", groupId as string);
-    
-    const unsubscribe = onSnapshot(groupRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        const groupData: Group = {
-          name: data.name || "",
-          author: data.author || "",
-          events: data.events || [],
-          secret_key: data.secret_key || "",
-          members: data.members || [],
-          imageUrl: data.imageUrl || "",
-        };
-        setGroup(groupData);
-      } else {
+
+    const unsubscribe = onSnapshot(
+      groupRef,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          const groupData: Group = {
+            name: data.name || "",
+            author: data.author || "",
+            events: data.events || [],
+            secret_key: data.secret_key || "",
+            members: data.members || [],
+            imageUrl: data.imageUrl || "",
+          };
+          setGroup(groupData);
+          dispatch(setCurEvent(groupData.events[0]));
+        } else {
+          redirect("/");
+        }
+      },
+      (error) => {
+        console.error("Error fetching group data: ", error);
         redirect("/");
       }
-    }, (error) => {
-      console.error("Error fetching group data: ", error);
-      redirect("/");
-    });
+    );
 
     return () => unsubscribe();
   }, [groupId]);
@@ -110,7 +117,10 @@ const Group: NextPage = () => {
     <>
       {openInviteModal && (
         <>
-          <div onClick={showInviteModal} className="bg-[#000]/50 h-[100dvh] absolute w-full z-[20]"></div>
+          <div
+            onClick={showInviteModal}
+            className="bg-[#000]/50 h-[100dvh] absolute w-full z-[20]"
+          ></div>
           <div className="flex flex-col gap-[2vh] py-[4vh] justify-center items-center w-full absolute top-0 bg-[#360F50] z-[21]">
             <h1 className="text-[3vh] text-white font-bold">invite people</h1>
             <div className="flex gap-[1vh]">
@@ -164,20 +174,27 @@ const Group: NextPage = () => {
         </div>
 
         <div className="w-full">
-          {group.events.map((event, index) => {
-            return (
+          {/* {group.events.map((event, index) => {
+            console.log("e + i ===> ", event, index);
+            return ( */}
               <div className="flex justify-between flex-col">
-                <SingleEventModal event={event} />
-                <div>
-                  <EventDecisionButton event={event} eventIndex={index} />
-                  {event.participants[0]?.id === user.id && (
-              <EditEventModal event={event} eventIndex={index} />
-            )}
+                <SingleEventModal event={curEvent} />
+                <div className="flex justify-center items-center gap-[1vh] py-[2vh]">
+
+                
+                  {curEvent?.participants[0]?.id === user.id && curEvent?.participants.length !== 0 && (
+                    <>
+                  <EventDecisionButton event={curEvent} eventIndex={0} />
+
+                    <EditEventModal event={curEvent} eventIndex={0} />
+                    </>
+
+                  )}
                 </div>
               </div>
-            );
-          })}
-          <div className="flex flex-col gap-[1vh] justify-center items-center">
+            {/* );
+          })} */}
+          <div className="flex flex-col gap-[2vh] justify-center items-center">
             <CreateEventModal group={group} />
 
             {group?.members?.length > 1 ? (
@@ -199,6 +216,10 @@ const Group: NextPage = () => {
                 </button>
               </div>
             )}
+          </div>
+          <div>
+          <UpcomingDwadlesButton events={group.events} />
+            {/* <UpcomingDwadlesButton /> */}
           </div>
         </div>
       </div>

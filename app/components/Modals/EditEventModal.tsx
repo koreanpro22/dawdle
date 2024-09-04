@@ -5,6 +5,7 @@ import Modal from "@mui/material/Modal";
 import { doc, updateDoc, getDoc, onSnapshot } from "firebase/firestore";
 import { firestore } from "@/lib/firebase/config";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import CircularProgress from "@mui/material/CircularProgress";
 
 const style = {
@@ -35,15 +36,18 @@ interface FormData {
 }
 
 interface EditEventModalProps {
-  event: FormData; 
-  eventIndex: number; 
+  event: FormData;
+  eventIndex: number;
 }
 
-const EditEventModal: React.FC<EditEventModalProps> = ({ event, eventIndex }) => {
+const EditEventModal: React.FC<EditEventModalProps> = ({
+  event,
+  eventIndex,
+}) => {
   const pathname = usePathname();
   const groupId = pathname.split("/").pop();
   const [open, setOpen] = React.useState(false);
-  const [formData, setFormData] = React.useState<FormData>(event); 
+  const [formData, setFormData] = React.useState<FormData>(event);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -54,24 +58,30 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, eventIndex }) =>
 
   React.useEffect(() => {
     const requiredFields = ["title", "address", "date", "time", "type"];
-    const missing = requiredFields.filter((field) => !formData[field as keyof FormData]);
+    const missing = requiredFields.filter(
+      (field) => !formData[field as keyof FormData]
+    );
 
     setMissingFields(missing);
     setIsButtonDisabled(missing.length > 0);
   }, [formData]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleGenerateItinerary = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
+      const response = await fetch("/api/generate", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           address: formData.address,
@@ -84,7 +94,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, eventIndex }) =>
       const reader = response.body?.getReader();
       if (!reader) return;
 
-      let result = '';
+      let result = "";
       const decoder = new TextDecoder();
 
       while (true) {
@@ -93,57 +103,58 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, eventIndex }) =>
         result += decoder.decode(value);
       }
 
-      setFormData(prevData => ({
+      setFormData((prevData) => ({
         ...prevData,
         itinerary: result,
       }));
     } catch (error) {
-      console.error('Error generating itinerary:', error);
+      console.error("Error generating itinerary:", error);
     }
-    setLoading(false)
+    setLoading(false);
   };
 
-//   const handleRemoveParticipant = (participantId: string) => {
-//     setFormData(prev => ({
-//       ...prev,
-//       participants: prev.participants.filter(participant => participant.id !== participantId),
-//     }));
-//   };
+  //   const handleRemoveParticipant = (participantId: string) => {
+  //     setFormData(prev => ({
+  //       ...prev,
+  //       participants: prev.participants.filter(participant => participant.id !== participantId),
+  //     }));
+  //   };
 
-const removeParticipant = async (participantId: string, eventIndex: number) => {
-    if (!groupId) return; 
+  const removeParticipant = async (
+    participantId: string,
+    eventIndex: number
+  ) => {
+    if (!groupId) return;
     try {
-      const groupRef = doc(firestore, 'groups', `${groupId}`);
+      const groupRef = doc(firestore, "groups", `${groupId}`);
       const groupSnap = await getDoc(groupRef);
       const currentEvents = groupSnap.data()?.events || [];
-      
-  
+
       const updatedEvent = currentEvents[eventIndex];
       if (!updatedEvent) return;
-  
-   
-      updatedEvent.participants = updatedEvent.participants.filter((participant: Participant) => participant.id !== participantId);
-  
-   
+
+      updatedEvent.participants = updatedEvent.participants.filter(
+        (participant: Participant) => participant.id !== participantId
+      );
+
       await updateDoc(groupRef, {
         events: currentEvents,
       });
-  
+
       alert(`Participant was removed successfully.`);
     } catch (error) {
       console.error("Error removing participant:", error);
     }
   };
-  
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const groupRef = doc(firestore, 'groups', `${groupId}`);
+      const groupRef = doc(firestore, "groups", `${groupId}`);
       const groupSnap = await getDoc(groupRef);
       const currentEvents = groupSnap.data()?.events || [];
-      
-      currentEvents[eventIndex] = formData; 
+
+      currentEvents[eventIndex] = formData;
 
       await updateDoc(groupRef, {
         events: currentEvents,
@@ -157,9 +168,9 @@ const removeParticipant = async (participantId: string, eventIndex: number) => {
 
   React.useEffect(() => {
     if (!groupId) return;
-    
-    const groupRef = doc(firestore, 'groups', `${groupId}`);
-    
+
+    const groupRef = doc(firestore, "groups", `${groupId}`);
+
     const unsubscribe = onSnapshot(groupRef, (docSnap) => {
       const updatedEvents = docSnap.data()?.events || [];
       const updatedEvent = updatedEvents[eventIndex];
@@ -169,139 +180,211 @@ const removeParticipant = async (participantId: string, eventIndex: number) => {
       }
     });
 
-    return () => unsubscribe(); 
+    return () => unsubscribe();
   }, [groupId, eventIndex]);
 
   return (
     <div>
-      <Button variant="contained" onClick={handleOpen}>
-        Edit Event
-      </Button>
+      <button
+        onClick={handleOpen}
+        className="bg-primary-text-color w-min rounded-[4vh] px-[2vh] py-[2vh]"
+      >
+        {/* <div
+                onClick={handleDelete}
+                className={`bg-[#E9C0E9] rounded-full w-min p-[2vh] text-[6vh]`}
+              >
+                👎
+              </div> */}
+        <p className="text-primary-accent-color text-[3vh] font-bold text-nowrap">
+          Edit Event
+        </p>
+      </button>
+
       <Modal
         open={open}
         onClose={handleClose}
         aria-labelledby="edit-event-modal-title"
         aria-describedby="edit-event-modal-description"
       >
-        <Box sx={style}>
-          <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-            <div className="flex flex-col gap-3">
-              <label htmlFor="title">Event title</label>
-              <input
-                className="outline-none px-5 w-full rounded-full p-[1vh]"
-                name="title"
-                type="text"
-                value={formData.title}
-                onChange={handleChange}
-              />
-            </div>
+        <div className="bg-[#FFCD80] h-[100dvh] flex justify-center items-center">
+          <div className="flex p-[2vh] h-full flex-col w-full">
+            <div className="flex relative justify-center">
+              <div className="absolute top-0 left-0">
+                <Image
+                  onClick={handleClose}
+                  alt="eye"
+                  src={"/images/arrow-right-solid.svg"}
+                  width={0}
+                  height={0}
+                  className="w-[3.5vh] h-[3.5vh] rotate-180"
+                />
+              </div>
 
-            <div className="flex flex-col gap-3">
-              <label htmlFor="address">Event address</label>
-              <input
-                className="outline-none px-5 w-full rounded-full p-[1vh]"
-                name="address"
-                type="text"
-                value={formData.address}
-                onChange={handleChange}
-              />
+              <h1 className="text-[3vh] font-bold">edit event</h1>
             </div>
+            <form
+              className="flex flex-col gap-[2vh] w-[70%] m-auto"
+              onSubmit={handleSubmit}
+            >
+              <div className="flex flex-col gap-3">
+                <label
+                  className="text-[2vh] text-[#000000] font-bold lowercase"
+                  htmlFor="title"
+                >
+                  Event title
+                </label>
+                <input
+                  className="outline-none transition-colors ease-in-out duration-300 hover:bg-[#9B7AFF] focus:bg-[#9B7AFF] placeholder:text-white text-white bg-[#8A58FF] w-full rounded-[1vh] p-[1.5vh]"
+                  name="title"
+                  type="text"
+                  value={formData.title}
+                  onChange={handleChange}
+                />
+              </div>
 
-            <div className="flex flex-col gap-3">
-              <label htmlFor="date">Event date</label>
-              <input
-                className="outline-none px-5 w-full rounded-full p-[1vh]"
-                name="date"
-                type="date"
-                value={formData.date}
-                onChange={handleChange}
-              />
-            </div>
+              <div className="flex flex-col gap-3">
+                <label
+                  className="text-[2vh] text-[#000000] font-bold lowercase"
+                  htmlFor="address"
+                >
+                  Event address
+                </label>
+                <input
+                  className="outline-none transition-colors ease-in-out duration-300 hover:bg-[#9B7AFF] focus:bg-[#9B7AFF] placeholder:text-white text-white bg-[#8A58FF] w-full rounded-[1vh] p-[1.5vh]"
+                  name="address"
+                  type="text"
+                  value={formData.address}
+                  onChange={handleChange}
+                />
+              </div>
 
-            <div className="flex flex-col gap-3">
-              <p>Event time</p>
-              <input
-                className="p-[1vh] text-center outline-none px-5 rounded-full"
-                name="time"
-                type="time"
-                value={formData.time}
-                onChange={handleChange}
-              />
-            </div>
+              <div className="flex flex-col gap-3">
+                <label
+                  className="text-[2vh] text-[#000000] font-bold lowercase"
+                  htmlFor="date"
+                >
+                  Event date
+                </label>
+                <input
+                  className="outline-none transition-colors ease-in-out duration-300 hover:bg-[#9B7AFF] focus:bg-[#9B7AFF] placeholder:text-white text-white bg-[#8A58FF] w-full rounded-[1vh] p-[1.5vh]"
+                  name="date"
+                  type="date"
+                  value={formData.date}
+                  onChange={handleChange}
+                />
+              </div>
 
-            <div className="flex flex-col gap-3">
-              <label htmlFor="type">Event type</label>
-              <select
-                className="px-5 w-full rounded p-[1vh] outline-none"
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-              >
-                <option value="gym">Gym</option>
-                <option value="cafe">Cafe</option>
-                <option value="club">Club</option>
-                <option value="food">Restaurant</option>
-                <option value="park">Park</option>
-              </select>
-            </div>
+              <div className="flex flex-col gap-3">
+                <label
+                  className="text-[2vh] text-[#000000] font-bold lowercase"
+                  htmlFor="time"
+                >
+                  Event time
+                </label>
+                <input
+                  className="text-start outline-none w-full transition-colors ease-in-out duration-300 hover:bg-[#9B7AFF] focus:bg-[#9B7AFF] placeholder:text-white text-white bg-[#8A58FF] rounded-fullw-full rounded-[1vh] p-[1.5vh]"
+                  name="time"
+                  type="time"
+                  value={formData.time}
+                  onChange={handleChange}
+                />
+              </div>
 
-            <div className="flex flex-col gap-3">
-              <label htmlFor="itinerary">Event Itinerary</label>
-              <textarea
-                className="outline-none px-5 w-full rounded p-[1vh]"
-                name="itinerary"
-                rows={4}
-                value={formData.itinerary}
-                onChange={handleChange}
-              ></textarea>
-            </div>
-            <div className="flex flex-col gap-3">
-              <label>Participants</label>
-              <ul className="list-none p-0">
-                {formData.participants.slice(1).map((participant) => (
-                  <li key={participant.id} className="flex items-center justify-between p-2 border-b">
-                    <span>{participant.email}</span>
-                    <Button
-                      type="button"  
-                      variant="contained"
-                      color="secondary"
-                      onClick={() => removeParticipant(participant.id, eventIndex)}
+              <div className="flex flex-col gap-3">
+                <label
+                  className="text-[2vh] text-[#000000] font-bold lowercase"
+                  htmlFor="type"
+                >
+                  Event time
+                </label>
+                <select
+                  className="outline-none transition-colors ease-in-out duration-300 hover:bg-[#9B7AFF] focus:bg-[#9B7AFF] placeholder:text-white text-white bg-[#8A58FF] w-full rounded-[1vh] p-[1.5vh]"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                >
+                  <option value="gym">Gym</option>
+                  <option value="cafe">Cafe</option>
+                  <option value="club">Club</option>
+                  <option value="food">Restaurant</option>
+                  <option value="park">Park</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <label
+                  className="text-[2vh] text-[#000000] font-bold lowercase"
+                  htmlFor="itinerary"
+                >
+                  Event Itinerary
+                </label>
+                <textarea
+                  className="outline-none transition-colors ease-in-out duration-300 hover:bg-[#9B7AFF] focus:bg-[#9B7AFF] placeholder:text-white text-white bg-[#8A58FF] w-full rounded-[1vh] p-[1.5vh]"
+                  name="itinerary"
+                  rows={4}
+                  value={formData.itinerary}
+                  onChange={handleChange}
+                ></textarea>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <label>Participants</label>
+                <ul className="list-none p-0">
+                  {formData.participants.slice(1).map((participant) => (
+                    <li
+                      key={participant.id}
+                      className="flex items-center justify-between p-2 border-b"
                     >
-                      Remove
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            {loading ? ( 
+                      <span>{participant.email}</span>
+                      <Button
+                        type="button"
+                        variant="contained"
+                        color="secondary"
+                        onClick={() =>
+                          removeParticipant(participant.id, eventIndex)
+                        }
+                      >
+                        Remove
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {loading ? (
                 <div className="flex justify-center">
                   <CircularProgress color="inherit" />
                 </div>
-              ) :(
-            <button
-              type="button"
-                className={`lowercase rounded-[4vh] px-[2vh] py-[2vh] text-[3vh] font-bold mb-[2vh] w-[10vw] self-center transition-colors ease-in-out duration-300 ${
-                  isButtonDisabled
-                    ? "bg-gray-400"
-                    : "bg-[#9B7AFF] hover:bg-[#7a4cc0]"
-                }`}
-              onClick={handleGenerateItinerary}
-              disabled={isButtonDisabled}
-              title={isButtonDisabled ? `Missing fields: ${missingFields.join(', ')}` : ""}
-            >
-              Generate
-            </button>
-            )}
-            <button
-              type="submit"
-              className="bg-secondary-accent-color w-full rounded-full p-[1vh]"
-            >
-              <h1 className="text-[3.5vh] font-[900] text-primary-accent-color">
-                Edit Event
-              </h1>
-            </button>
-          </form>
-        </Box>
+              ) : (
+                <button
+                  type="button"
+                  className={`lowercase rounded-[4vh] px-[2vh] py-[2vh] text-[3vh] font-bold mb-[2vh] w-[10vw] self-center transition-colors ease-in-out duration-300 ${
+                    isButtonDisabled
+                      ? "bg-gray-400 w-full rounded-[1vh] p-[1vh] transition-all ease-in-out"
+                      : "group hover:bg-[#8A58FF] bg-white w-full rounded-[1vh] p-[1vh] transition-all ease-in-out"
+                  }`}
+                  onClick={handleGenerateItinerary}
+                  disabled={isButtonDisabled}
+                  title={
+                    isButtonDisabled
+                      ? `Missing fields: ${missingFields.join(", ")}`
+                      : ""
+                  }
+                >
+                  <h1 className="group-hover:text-[#fff]">Generate</h1>
+                </button>
+              )}
+
+              <button
+                type="submit"
+                className="group hover:bg-[#8A58FF] bg-white w-full rounded-[1vh] p-[1vh] transition-all ease-in-out"
+              >
+                <h1 className="text-[3.5vh] font-[900] group-hover:text-[#fff] text-[#8A58FF] transition-all ease-in-out">
+                  Edit Event
+                </h1>
+              </button>
+            </form>
+          </div>
+        </div>
       </Modal>
     </div>
   );
