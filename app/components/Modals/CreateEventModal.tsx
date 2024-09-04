@@ -6,6 +6,7 @@ import { firestore } from "@/lib/firebase/config";
 import { usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/lib/store/userSlice";
+import CircularProgress from "@mui/material/CircularProgress";
 
 interface Participant {
   id: string;
@@ -61,9 +62,21 @@ export default function CreateEventModal({ group }: Props) {
 
   const [isButtonDisabled, setIsButtonDisabled] = React.useState(true);
   const [missingFields, setMissingFields] = React.useState<string[]>([]);
+  const [loading, setLoading] = React.useState(false);
 
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setFormData({
+      title: "",
+      address: "",
+      date: "",
+      time: "",
+      type: "",
+      itinerary: "",
+      participants: [{ id: user.id, email: user.email }],
+    });
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -107,6 +120,7 @@ export default function CreateEventModal({ group }: Props) {
   };
 
   const handleGenerateItinerary = async () => {
+    setLoading(true)
     try {
       const response = await fetch('/api/generate', {
         method: 'POST',
@@ -140,6 +154,7 @@ export default function CreateEventModal({ group }: Props) {
     } catch (error) {
       console.error('Error generating itinerary:', error);
     }
+    setLoading(false)
   };
 
 
@@ -269,7 +284,11 @@ export default function CreateEventModal({ group }: Props) {
                   onChange={handleInputChange}
                 ></textarea>
               </div>
-
+              {loading ? ( 
+                <div className="flex justify-center">
+                  <CircularProgress color="inherit" />
+                </div>
+              ) :(
               <button
                 type="button"
                   className={`lowercase rounded-[4vh] px-[2vh] py-[2vh] text-[3vh] font-bold mb-[2vh] w-[10vw] self-center transition-colors ease-in-out duration-300 ${
@@ -283,6 +302,7 @@ export default function CreateEventModal({ group }: Props) {
               >
                 Generate
               </button>
+              )}
               <button
               type="submit"
               className="bg-white w-full rounded-[1vh] p-[1vh]"

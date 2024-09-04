@@ -5,6 +5,7 @@ import Modal from "@mui/material/Modal";
 import { doc, updateDoc, getDoc, onSnapshot } from "firebase/firestore";
 import { firestore } from "@/lib/firebase/config";
 import { usePathname } from "next/navigation";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const style = {
   position: "absolute" as "absolute",
@@ -47,9 +48,59 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, eventIndex }) =>
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  const [isButtonDisabled, setIsButtonDisabled] = React.useState(true);
+  const [missingFields, setMissingFields] = React.useState<string[]>([]);
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    const requiredFields = ["title", "address", "date", "time", "type"];
+    const missing = requiredFields.filter((field) => !formData[field as keyof FormData]);
+
+    setMissingFields(missing);
+    setIsButtonDisabled(missing.length > 0);
+  }, [formData]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleGenerateItinerary = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address: formData.address,
+          date: formData.date,
+          time: formData.time,
+          type: formData.type,
+        }),
+      });
+
+      const reader = response.body?.getReader();
+      if (!reader) return;
+
+      let result = '';
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        result += decoder.decode(value);
+      }
+
+      setFormData(prevData => ({
+        ...prevData,
+        itinerary: result,
+      }));
+    } catch (error) {
+      console.error('Error generating itinerary:', error);
+    }
+    setLoading(false)
   };
 
 //   const handleRemoveParticipant = (participantId: string) => {
@@ -222,7 +273,25 @@ const removeParticipant = async (participantId: string, eventIndex: number) => {
                 ))}
               </ul>
             </div>
-            
+            {loading ? ( 
+                <div className="flex justify-center">
+                  <CircularProgress color="inherit" />
+                </div>
+              ) :(
+            <button
+              type="button"
+                className={`lowercase rounded-[4vh] px-[2vh] py-[2vh] text-[3vh] font-bold mb-[2vh] w-[10vw] self-center transition-colors ease-in-out duration-300 ${
+                  isButtonDisabled
+                    ? "bg-gray-400"
+                    : "bg-[#9B7AFF] hover:bg-[#7a4cc0]"
+                }`}
+              onClick={handleGenerateItinerary}
+              disabled={isButtonDisabled}
+              title={isButtonDisabled ? `Missing fields: ${missingFields.join(', ')}` : ""}
+            >
+              Generate
+            </button>
+            )}
             <button
               type="submit"
               className="bg-secondary-accent-color w-full rounded-full p-[1vh]"

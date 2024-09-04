@@ -4,6 +4,7 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import Image from "next/image";
+import ReactMarkdown from 'react-markdown';
 
 const style = {
   position: "absolute" as "absolute",
@@ -109,7 +110,7 @@ export default function SingleEventModal({ event }: SingleEventModalProps) {
           </Typography>
           <Typography id="modal-modal-itinerary" sx={{ mt: 2 }}>
             <span>
-              {event.itinerary}
+              <ReactMarkdown>{event.itinerary}</ReactMarkdown>
             </span>
           </Typography>
         </Box>
