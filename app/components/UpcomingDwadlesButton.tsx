@@ -31,12 +31,22 @@ export default function UpcomingDwadlesButton({
   const dispatch = useDispatch();
   const curEvent = useSelector(selectCurEvent);
 
+  // Function to parse date and time into a single Date object
+  const parseDateTime = (event: Event) => {
+    return new Date(`${event.date}T${event.time}`);
+  };
+
+  // Sorting events by datetime
+  const sortedEvents = events.sort((a, b) => {
+    return parseDateTime(a).getTime() - parseDateTime(b).getTime();
+  });
+
   return (
     <div className="flex flex-col justify-around items-center w-full gap-[1vh] pt-[10vh]">
       <h1 className="text-primary-accent-color text-start w-full text-[2.5vh] font-[900]">
         Upcoming Dawdles 🦆🐤
       </h1>
-      {events
+      {sortedEvents
         .filter((event) => curEvent && event.title !== curEvent.title)
         .map((event, index) => (
           <div
@@ -49,11 +59,11 @@ export default function UpcomingDwadlesButton({
               <div className="absolute top-0 right-0 rounded-[3vh] flex h-full justify-center items-center">
 
               <span className="text-[2vh] font-bold">
-                {`${new Date(event?.date).toLocaleDateString("en-US", {
+                {`${new Date(event.date).toLocaleDateString("en-US", {
                   month: "numeric",
                   day: "numeric",
                 })} ${new Date(
-                  "1970-01-01T" + event?.time + "Z"
+                  `1970-01-01T${event.time}Z`
                 ).toLocaleTimeString("en-US", {
                   hour: "numeric",
                   minute: "numeric",
