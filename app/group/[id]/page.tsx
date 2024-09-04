@@ -60,10 +60,9 @@ const Group: NextPage = () => {
   const secretKeyRef = useRef(null);
 
   const copyToClipboard = () => {
-    const secretKey = secretKeyRef.current;
-    if (secretKey) {
+    if (group.secret_key) {
       navigator.clipboard
-        .writeText(secretKey.textContent)
+        .writeText(group.secret_key)
         .then(() => {
           alert("Secret key copied to clipboard!");
         })
@@ -76,6 +75,8 @@ const Group: NextPage = () => {
   const showInviteModal = () => {
     setOpenInviteModal(!openInviteModal);
   };
+
+
 
   useEffect(() => {
     if (!groupId) return;
@@ -179,9 +180,15 @@ const Group: NextPage = () => {
               <div className="flex justify-between flex-col">
                 <SingleEventModal event={curEvent} />
                 <div className="flex justify-center items-center gap-[1vh] py-[2vh]">
+
+                
+                  {curEvent?.participants[0]?.id === user.id && curEvent?.participants.length !== 0 && (
+                    <>
                   <EventDecisionButton event={curEvent} eventIndex={0} />
-                  {curEvent?.participants[0]?.id === user.id && (
+
                     <EditEventModal event={curEvent} eventIndex={0} />
+                    </>
+
                   )}
                 </div>
               </div>
