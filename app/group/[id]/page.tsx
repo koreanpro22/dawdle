@@ -57,10 +57,9 @@ const Group: NextPage = () => {
   const secretKeyRef = useRef(null);
 
   const copyToClipboard = () => {
-    const secretKey = secretKeyRef.current;
-    if (secretKey) {
+    if (group.secret_key) {
       navigator.clipboard
-        .writeText(secretKey)
+        .writeText(group.secret_key)
         .then(() => {
           alert("Secret key copied to clipboard!");
         })
