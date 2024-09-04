@@ -166,7 +166,7 @@ export default function EventDecisionButton({
   return (
     <>
       <div>
-        {event.participants[0]?.id == user.id ? (
+        {event?.participants[0]?.id == user.id ? (
           <div className="flex justify-around items-center w-full">
             <button
               onClick={handleDelete}
@@ -183,18 +183,18 @@ export default function EventDecisionButton({
               </p>
             </button>
           </div>
-        ) : !event.participants.some(participant => participant.id === user.id) ? (
-          <div className="flex justify-around items-center w-full">
+        ) : !event?.participants.some(participant => participant.id === user.id) ? (
+          <div className="flex justify-around items-center w-full gap-[2vh]">
             <div
               onClick={handleJoin}
-              className={`bg-[#ffffff] rounded-full w-min p-[2vh] text-[6vh]`}
+              className={`focus:bg-[#D2E823] hover:bg-[#D2E823] bg-[#ffffff] rounded-full w-min p-[2vh] text-[6vh] transition-all ease-in-out`}
             >
               👋
             </div>
 
             <div
               onClick={handleLeave}
-              className={`bg-[#ffffff] rounded-full w-min p-[2vh] text-[6vh]`}
+              className={`focus:bg-[#E9C0E9] hover:bg-[#E9C0E9] bg-[#ffffff] rounded-full w-min p-[2vh] text-[6vh] transition-all ease-in-out`}
             >
               👎
             </div>
@@ -202,7 +202,7 @@ export default function EventDecisionButton({
         ) : (
           <div className="flex justify-around items-center w-full">
             <button className="bg-[#FFCD80] w-min rounded-[4vh] p-5">
-              {!event.participants.some(participant => participant.id === user.id) ? (
+              {!event?.participants.some(participant => participant.id === user.id) ? (
                 <p onClick={handleLeave} className="text-[#360F50] text-[3vh] font-bold text-nowrap">
                   holding off
                 </p>

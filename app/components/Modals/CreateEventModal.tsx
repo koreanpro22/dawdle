@@ -226,7 +226,9 @@ export default function CreateEventModal({ group }: Props) {
               </div>
 
               <div className="flex flex-col gap-3">
-                <label htmlFor="itinerary">Event Itinerary</label>
+                <label 
+                                  className="text-[2vh] text-[#000000] font-bold lowercase"
+                htmlFor="itinerary">Event Itinerary</label>
                 <textarea
                   className="outline-none transition-colors ease-in-out duration-300 hover:bg-[#9B7AFF] focus:bg-[#9B7AFF] placeholder:text-white text-white bg-[#8A58FF] w-full rounded-[1vh] p-[1.5vh]"
                   name="itinerary"
@@ -236,10 +238,10 @@ export default function CreateEventModal({ group }: Props) {
 
               <button
                 type="submit"
-                className="bg-white w-full rounded-[1vh] p-[1vh]"
+                className="group hover:bg-[#8A58FF] bg-white w-full rounded-[1vh] p-[1vh] transition-all ease-in-out"
               >
-                <h1 className="bg-[#] text-[3.5vh] font-[900] text-[#8A58FF]">
-                  create event
+                <h1 className="text-[3.5vh] font-[900] group-hover:text-[#fff] text-[#8A58FF] transition-all ease-in-out">
+                create event
                 </h1>
               </button>
               {/* </button> */}
