@@ -22,10 +22,19 @@ interface FormData {
   participants: Participant[];
 }
 
+interface GroupEvent {  
+  title: string;
+  address: string;
+  date: string;
+  time: string;
+  type: string;
+  itinerary: string;
+  participants: Participant[];
+}
 interface Group {
   name: string;
   author: string;
-  events: Event[];
+  events: GroupEvent[];
   secret_key: string;
   members: string[];
   imageUrl: string;

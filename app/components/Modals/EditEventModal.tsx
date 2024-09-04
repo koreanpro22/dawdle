@@ -2,7 +2,7 @@ import * as React from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { doc, updateDoc, getDoc, onSnapshot } from "firebase/firestore";
 import { firestore } from "@/lib/firebase/config";
 import { usePathname } from "next/navigation";
 
@@ -52,6 +52,39 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, eventIndex }) =>
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+//   const handleRemoveParticipant = (participantId: string) => {
+//     setFormData(prev => ({
+//       ...prev,
+//       participants: prev.participants.filter(participant => participant.id !== participantId),
+//     }));
+//   };
+
+const removeParticipant = async (participantId: string, eventIndex: number) => {
+    if (!groupId) return; 
+    try {
+      const groupRef = doc(firestore, 'groups', `${groupId}`);
+      const groupSnap = await getDoc(groupRef);
+      const currentEvents = groupSnap.data()?.events || [];
+      
+  
+      const updatedEvent = currentEvents[eventIndex];
+      if (!updatedEvent) return;
+  
+   
+      updatedEvent.participants = updatedEvent.participants.filter((participant: Participant) => participant.id !== participantId);
+  
+   
+      await updateDoc(groupRef, {
+        events: currentEvents,
+      });
+  
+      alert(`Participant was removed successfully.`);
+    } catch (error) {
+      console.error("Error removing participant:", error);
+    }
+  };
+  
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -70,6 +103,23 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, eventIndex }) =>
       console.error("Error updating event:", error);
     }
   };
+
+  React.useEffect(() => {
+    if (!groupId) return;
+    
+    const groupRef = doc(firestore, 'groups', `${groupId}`);
+    
+    const unsubscribe = onSnapshot(groupRef, (docSnap) => {
+      const updatedEvents = docSnap.data()?.events || [];
+      const updatedEvent = updatedEvents[eventIndex];
+
+      if (updatedEvent) {
+        setFormData(updatedEvent);
+      }
+    });
+
+    return () => unsubscribe(); 
+  }, [groupId, eventIndex]);
 
   return (
     <div>
@@ -153,6 +203,24 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, eventIndex }) =>
                 value={formData.itinerary}
                 onChange={handleChange}
               ></textarea>
+            </div>
+            <div className="flex flex-col gap-3">
+              <label>Participants</label>
+              <ul className="list-none p-0">
+                {formData.participants.slice(1).map((participant) => (
+                  <li key={participant.id} className="flex items-center justify-between p-2 border-b">
+                    <span>{participant.email}</span>
+                    <Button
+                      type="button"  
+                      variant="contained"
+                      color="secondary"
+                      onClick={() => removeParticipant(participant.id, eventIndex)}
+                    >
+                      Remove
+                    </Button>
+                  </li>
+                ))}
+              </ul>
             </div>
             
             <button

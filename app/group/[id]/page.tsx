@@ -60,7 +60,7 @@ const Group: NextPage = () => {
     const secretKey = secretKeyRef.current;
     if (secretKey) {
       navigator.clipboard
-        .writeText(secretKey.textContent)
+        .writeText(secretKey)
         .then(() => {
           alert("Secret key copied to clipboard!");
         })
@@ -70,29 +70,12 @@ const Group: NextPage = () => {
     }
   };
 
-  const getGroupByGroupId = async () => {
-    const groupRef = doc(firestore, "groups", `${groupId}`);
-    const groupSnap = await getDoc(groupRef);
-
-    if (groupSnap.exists()) {
-      const data = groupSnap.data();
-      return data;
-    } else {
-      return redirect("/");
-    }
-  };
 
   const showInviteModal = () => {
     setOpenInviteModal(!openInviteModal);
   };
 
-  useEffect(() => {
-    const fetchGroup = async () => {
-      const groupData = await getGroupByGroupId();
-      console.log("group data: ", groupData);
-      setGroup(groupData);
-    };
-  }, []);
+
 
   useEffect(() => {
     if (!groupId) return;
@@ -183,7 +166,6 @@ const Group: NextPage = () => {
 
         <div className="w-full">
           {group.events.map((event, index) => {
-            console.log("e + i ===> ", event, index);
             return (
               <div className="flex justify-between flex-col">
                 <SingleEventModal event={event} />
