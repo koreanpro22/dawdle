@@ -25,6 +25,18 @@ type Group = {
   imageUrl?: string;
 };
 
+const modalStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
+
 export default function Landing() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -235,7 +247,7 @@ export default function Landing() {
 
       console.log("User added to group with ID: ", groupDoc.id);
       alert("Successfully joined the group!");
-      handleClose(); 
+      handleJoinModal(); 
       setSecretKey("")
       fetchUserGroups()
 
@@ -379,6 +391,17 @@ export default function Landing() {
                     {/* {group.secret_key} */}
                   </div>
                 </div>
+                {group.author === user.id ? (
+                  <div className="absolute top-2 right-2 flex gap-2">
+                    <Button onClick={() => handleEditOpen(group)} style={{ color: 'white' }}>Edit</Button>
+                    <Button onClick={() => deleteGroup(group.id)} style={{ color: 'red' }}>Delete</Button>
+                  </div>
+                ) : (
+                  <div className="absolute top-2 right-2">
+                    <Button onClick={() => leaveGroup(group.id)} style={{ color: 'red' }}>Leave</Button>
+                  </div>
+                )}
+
                 <div className="right-0 bottom-0 m-[1vh] absolute flex justify-center items-center bg-[#360F50] rounded-full px-[1.5vh] py-[0.75vh]">
                   <img className="" src="/images/chick.svg" alt="" />
                   <h1 className="text-white m-auto">
@@ -387,6 +410,81 @@ export default function Landing() {
                 </div>
               </button>
             ))}
+            {editOpen && editGroup && (
+              <>
+              <div className="h-[100dvh] w-[100dvw] bg-black/50 absolute inset-0"></div>
+
+              <div className="flex flex-col bg-[#8A58FF] py-[3vh] left-0 bottom-0 absolute w-full z-10">
+                <div className="flex flex-col gap-[3vh] w-[65%] m-auto">
+                  <div className="flex">
+                    <h1
+                      onClick={handleEditClose}
+                      className="ml-[2vh] text-[3vh] text-white absolute left-0 cursor-pointer"
+                    >
+                      x
+                    </h1>
+                    <h1 className="text-[3vh] text-white m-auto">
+                      edit group
+                    </h1>
+                  </div>
+                  <div className="flex flex-col m-auto w-full">
+                    <label htmlFor="name" className="text-white">
+                      name
+                    </label>
+                    <input
+                      onChange={(e) => setGroupName(e.target.value)}
+                      value={groupName || editGroup?.name}
+                      className="rounded-[1vh] p-[1vh]"
+                      type="text"
+                      aria-label="name"
+                    />
+                  </div>
+                  <div className="">
+                    <label
+                      htmlFor="editImageInput"
+                      className="w-full flex h-[15vh] border-[0.25vh] border-solid border-white items-center justify-center rounded-[1vh] cursor-pointer"
+                    >
+                      <span className="text-white text-[3vh]">
+                        + group image
+                      </span>
+                      <input
+                        id="editImageInput"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleFileChange}
+                      />
+                    </label>
+                  </div>
+                  <div className="mt-[2vh]">
+                    <h2 className="text-white mb-[1vh]">Participants:</h2>
+                    <ul className="flex flex-col gap-[1vh]">
+                      {editGroup.participants.map((participant) => (
+                        <li
+                          key={participant.id}
+                          className="flex justify-between items-center bg-white p-[1vh] rounded-[0.5vh]"
+                        >
+                          <span className="text-black">{participant.email}</span>
+                          <button
+                            onClick={() => removeParticipant(participant.id)}
+                            className="text-red-600 hover:underline"
+                          >
+                            Remove
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <button
+                    onClick={updateGroup}
+                    className="bg-white w-fit m-auto px-[3vh] py-[1vh] rounded-[2vh] text-[3vh] text-[#8A58FF]"
+                  >
+                    update
+                  </button>
+                </div>
+              </div>
+              </>
+              )}
 
             {joinModal && (
               <>
