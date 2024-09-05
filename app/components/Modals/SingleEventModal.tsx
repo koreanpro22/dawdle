@@ -49,6 +49,18 @@ export default function SingleEventModal({ event }: SingleEventModalProps) {
     setViewParticipants(!viewParticipants);
   };
 
+  const addDays = (dateString: string, days: number) => {
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + days);
+    return date;
+  };
+  
+  const adjustedDate = addDays(event.date, 1); 
+  const localDateString = adjustedDate.toLocaleDateString("en-US", {
+    month: "numeric",
+    day: "numeric",
+  });
+
   return (
     <div>
       {/* <Button onClick={handleOpen}>{event.title}</Button> */}
@@ -163,15 +175,13 @@ export default function SingleEventModal({ event }: SingleEventModalProps) {
               </div>
             </div>
           </button>
-          <div className="text-white text-[3.5vh] font-bold text-center">{`${new Date(
-            event?.date
-          ).toLocaleDateString("en-US", {
-            month: "numeric",
-            day: "numeric",
-          })} ${new Date("1970-01-01T" + event?.time ).toLocaleTimeString(
-            "en-US",
-            { hour: "numeric", minute: "numeric", hour12: true }
-          )}`}</div>
+          <div className="text-white text-[3.5vh] font-bold text-center">
+            {localDateString}{" "}{" "}
+            {new Date("1970-01-01T" + event?.time).toLocaleTimeString(
+              "en-US",
+              { hour: "numeric", minute: "numeric", hour12: true }
+            )}
+          </div>
         </>
       )}
 
