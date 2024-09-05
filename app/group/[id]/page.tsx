@@ -22,6 +22,7 @@ interface Participant {
 }
 
 interface Event {
+  id: string;
   title: string;
   address: string;
   date: string;
@@ -59,6 +60,8 @@ const Group: NextPage = () => {
 
   const secretKeyRef = useRef(null);
 
+  const hasLoadedRef = useRef(false);
+
   const copyToClipboard = () => {
     if (group.secret_key) {
       navigator.clipboard
@@ -95,7 +98,10 @@ const Group: NextPage = () => {
             imageUrl: data.imageUrl || "",
           };
           setGroup(groupData);
-          dispatch(setCurEvent(groupData.events[0]));
+           if (!hasLoadedRef.current) {
+            dispatch(setCurEvent(groupData.events[0]));
+            hasLoadedRef.current = true; 
+           }
         } else {
           redirect("/");
         }
@@ -176,16 +182,16 @@ const Group: NextPage = () => {
             console.log("e + i ===> ", event, index);
             return (
               <div className="flex justify-between flex-col">
-                {curEvent.title === event.title && (
+                {curEvent?.id == event?.id && (
                   <>
                     <SingleEventModal event={curEvent} />
                     <div className="flex justify-center items-center gap-[1vh] py-[2vh]">
                       {curEvent?.participants[0]?.id === user.id &&
                       curEvent?.participants.length !== 0 ? (
-                        <EditEventModal event={curEvent} eventIndex={index} />
+                        <EditEventModal event={event} eventIndex={index} />
                       ) : curEvent?.participants.length >= 0 ? (
                         <EventDecisionButton
-                          event={curEvent}
+                          event={event}
                           eventIndex={index}
                         />
                       ) : null}

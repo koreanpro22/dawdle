@@ -7,6 +7,8 @@ import { firestore } from "@/lib/firebase/config";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useDispatch } from "react-redux";
+import { setCurEvent } from "@/lib/store/curEventSlice";
 
 const style = {
   position: "absolute" as "absolute",
@@ -50,7 +52,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
   const [formData, setFormData] = React.useState<FormData>(event);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-
+  const dispatch = useDispatch() 
   const [isButtonDisabled, setIsButtonDisabled] = React.useState(true);
   const [missingFields, setMissingFields] = React.useState<string[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -139,7 +141,6 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
       await updateDoc(groupRef, {
         events: currentEvents,
       });
-
       alert(`Participant was removed successfully.`);
     } catch (error) {
       console.error("Error removing participant:", error);
@@ -176,6 +177,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
 
       if (updatedEvent) {
         setFormData(updatedEvent);
+        dispatch(setCurEvent(updatedEvent))
       }
     });
 

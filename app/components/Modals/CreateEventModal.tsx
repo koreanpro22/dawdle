@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/lib/store/userSlice";
 import CircularProgress from "@mui/material/CircularProgress";
+import {v4 as uuidv4} from 'uuid'
 
 interface Participant {
   id: string;
@@ -100,8 +101,12 @@ export default function CreateEventModal({ group }: Props) {
 
     const createEvent = async () => {
       const groupRef = doc(firestore, "groups", `${groupId}`);
+      const eventId = uuidv4();
+  
+      const eventWithId = { ...formData, id: eventId };
+
       await updateDoc(groupRef, {
-        events: arrayUnion(formData),
+        events: arrayUnion(eventWithId),
       });
 
       setFormData({
