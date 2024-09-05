@@ -183,7 +183,7 @@ const Group: NextPage = () => {
                       {curEvent?.participants[0]?.id === user.id &&
                       curEvent?.participants.length !== 0 ? (
                         <EditEventModal event={curEvent} eventIndex={index} />
-                      ) : curEvent?.participants.length !== 0 ? (
+                      ) : curEvent?.participants.length >= 0 ? (
                         <EventDecisionButton
                           event={curEvent}
                           eventIndex={index}

@@ -31,11 +31,12 @@ export default function EventDecisionButton({
 }: EventDecisionButtonProps) {
   const [active, setActive] = useState(false);
   const [decision, setDecision] = useState(true);
-
+  
   // console.log("event in decisions component", event)
   const pathname = usePathname();
 
   const user = useSelector(selectUser);
+
   const groupId = pathname.split("/").pop();
 
   const handleChoice = (decision: boolean) => {
@@ -132,58 +133,11 @@ export default function EventDecisionButton({
     removeUserFromEvent();
   };
 
-  const handleDelete = async () => {
-    const deleteEventFromGroup = async () => {
-      const groupRef = doc(firestore, "groups", `${groupId}`);
-      const groupSnap = await getDoc(groupRef);
-
-      if (groupSnap.exists()) {
-        const groupData = groupSnap.data();
-
-        // Ensure the events array exists
-        const events = groupData.events || [];
-        console.log("events before deletion", events);
-
-        // Delete the specific event by filtering it out
-        const updatedEvents = events.filter(
-          (_: any, index: number) => index !== eventIndex
-        );
-
-        console.log("events after deletion", updatedEvents);
-
-        // Update the document with the modified events array
-        await updateDoc(groupRef, {
-          events: updatedEvents,
-        });
-      } else {
-        console.error("Group document not found");
-      }
-    };
-
-    deleteEventFromGroup();
-  };
 
   return (
     <>
       <div>
-        {event?.participants[0]?.id == user.id ? (
-          <div className="flex justify-around items-center w-full">
-            <button
-              onClick={handleDelete}
-              className="bg-primary-accent-color w-min rounded-[4vh] px-[2vh] py-[2vh]"
-            >
-              {/* <div
-                onClick={handleDelete}
-                className={`bg-[#E9C0E9] rounded-full w-min p-[2vh] text-[6vh]`}
-              >
-                👎
-              </div> */}
-              <p className="text-primary-text-color text-[3vh] font-bold text-nowrap">
-                Delete Event
-              </p>
-            </button>
-          </div>
-        ) : !event?.participants.some(participant => participant.id === user.id) ? (
+      {!event?.participants.some(participant => participant.id === user.id) ? (
           <div className="flex justify-around items-center w-full gap-[2vh]">
             <div
               onClick={handleJoin}

@@ -48,7 +48,6 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
   const groupId = pathname.split("/").pop();
   const [open, setOpen] = React.useState(false);
   const [formData, setFormData] = React.useState<FormData>(event);
-
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
@@ -183,8 +182,47 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
     return () => unsubscribe();
   }, [groupId, eventIndex]);
 
+  const handleDelete = async () => {
+    const deleteEventFromGroup = async () => {
+      const groupRef = doc(firestore, "groups", `${groupId}`);
+      const groupSnap = await getDoc(groupRef);
+
+      if (groupSnap.exists()) {
+        const groupData = groupSnap.data();
+
+        // Ensure the events array exists
+        const events = groupData.events || [];
+        console.log("events before deletion", events);
+
+        // Delete the specific event by filtering it out
+        const updatedEvents = events.filter(
+          (_: any, index: number) => index !== eventIndex
+        );
+
+        console.log("events after deletion", updatedEvents);
+
+        // Update the document with the modified events array
+        await updateDoc(groupRef, {
+          events: updatedEvents,
+        });
+      } else {
+        console.error("Group document not found");
+      }
+    };
+
+    deleteEventFromGroup();
+  };
+
   return (
     <div>
+      <button
+        onClick={handleDelete}
+        className="bg-primary-accent-color w-min rounded-[4vh] px-[2vh] py-[2vh] mr-[10px]"
+      >
+        <p className="text-primary-text-color text-[3vh] font-bold text-nowrap">
+          Delete Event
+        </p>
+      </button>
       <button
         onClick={handleOpen}
         className="bg-primary-text-color w-min rounded-[4vh] px-[2vh] py-[2vh]"

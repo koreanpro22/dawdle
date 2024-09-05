@@ -1,8 +1,6 @@
 import * as React from "react";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import Modal from "@mui/material/Modal";
+import { Modal, Box, Typography, IconButton, Stack, Divider } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 
@@ -11,11 +9,15 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
+  width: '90%',
+  maxWidth: 600,
+  bgcolor: "rgba(255, 255, 255, 0.8)",
+  backdropFilter: "blur(10px)",
+  border: "none",
+  boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+  borderRadius: "20px",
   p: 4,
+  outline: 'none',
 };
 
 interface Participant {
@@ -173,25 +175,27 @@ export default function SingleEventModal({ event }: SingleEventModalProps) {
         </>
       )}
 
-      <Modal
+    <Modal
         open={open}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
-            {event?.title}
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Typography id="modal-modal-title" variant="h5" component="h2" sx={{ fontWeight: 'bold' }}>
+              {event?.title}
+            </Typography>
+            <IconButton onClick={handleClose}>
+              <CloseIcon />
+            </IconButton>
+          </Stack>
+          <Divider sx={{ my: 2, bgcolor: 'rgba(255, 255, 255, 0.5)' }} />
+          <Typography id="modal-modal-description" sx={{ mb: 2, color: 'text.secondary', fontSize: '1.1rem' }}>
+            {event?.type} at {event?.address}
           </Typography>
-          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            <span>
-              {event?.type} at {event?.address}
-            </span>
-          </Typography>
-          <Typography id="modal-modal-itinerary" sx={{ mt: 2 }}>
-            <span>
-              <ReactMarkdown>{event?.itinerary}</ReactMarkdown>
-            </span>
+          <Typography id="modal-modal-itinerary" sx={{ color: 'text.primary', lineHeight: 1.6, fontSize: '1rem' }}>
+            <ReactMarkdown>{event?.itinerary}</ReactMarkdown>
           </Typography>
         </Box>
       </Modal>
