@@ -76,8 +76,6 @@ const Group: NextPage = () => {
     setOpenInviteModal(!openInviteModal);
   };
 
-
-
   useEffect(() => {
     if (!groupId) return;
 
@@ -174,26 +172,33 @@ const Group: NextPage = () => {
         </div>
 
         <div className="w-full">
-          {/* {group.events.map((event, index) => {
+          {group.events.map((event, index) => {
             console.log("e + i ===> ", event, index);
-            return ( */}
+            return (
               <div className="flex justify-between flex-col">
-                <SingleEventModal event={curEvent} />
-                <div className="flex justify-center items-center gap-[1vh] py-[2vh]">
-
-                
-                  {curEvent?.participants[0]?.id === user.id && curEvent?.participants.length !== 0 && (
-                    <>
-                  <EventDecisionButton event={curEvent} eventIndex={0} />
-
-                    <EditEventModal event={curEvent} eventIndex={0} />
-                    </>
-
-                  )}
-                </div>
+                {curEvent.title === event.title && (
+                  <>
+                    <SingleEventModal event={curEvent} />
+                    <div className="flex justify-center items-center gap-[1vh] py-[2vh]">
+                      {curEvent?.participants[0]?.id === user.id &&
+                        curEvent?.participants.length !== 0 && (
+                          <>
+                            <EventDecisionButton
+                              event={curEvent}
+                              eventIndex={index}
+                            />
+                            <EditEventModal
+                              event={curEvent}
+                              eventIndex={index}
+                            />
+                          </>
+                        )}
+                    </div>
+                  </>
+                )}
               </div>
-            {/* );
-          })} */}
+            );
+          })}
           <div className="flex flex-col gap-[2vh] justify-center items-center">
             <CreateEventModal group={group} />
 
@@ -218,7 +223,7 @@ const Group: NextPage = () => {
             )}
           </div>
           <div>
-          <UpcomingDwadlesButton events={group.events} />
+            <UpcomingDwadlesButton events={group.events} />
             {/* <UpcomingDwadlesButton /> */}
           </div>
         </div>
