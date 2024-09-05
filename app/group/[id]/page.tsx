@@ -181,18 +181,14 @@ const Group: NextPage = () => {
                     <SingleEventModal event={curEvent} />
                     <div className="flex justify-center items-center gap-[1vh] py-[2vh]">
                       {curEvent?.participants[0]?.id === user.id &&
-                        curEvent?.participants.length !== 0 && (
-                          <>
-                            <EventDecisionButton
-                              event={curEvent}
-                              eventIndex={index}
-                            />
-                            <EditEventModal
-                              event={curEvent}
-                              eventIndex={index}
-                            />
-                          </>
-                        )}
+                      curEvent?.participants.length !== 0 ? (
+                        <EditEventModal event={curEvent} eventIndex={index} />
+                      ) : curEvent?.participants.length !== 0 ? (
+                        <EventDecisionButton
+                          event={curEvent}
+                          eventIndex={index}
+                        />
+                      ) : null}
                     </div>
                   </>
                 )}
