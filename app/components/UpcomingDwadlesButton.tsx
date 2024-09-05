@@ -37,17 +37,15 @@ export default function UpcomingDwadlesButton({
   };
 
   // Sorting events by datetime
-  const sortedEvents = events.sort((a, b) => {
-    return parseDateTime(a).getTime() - parseDateTime(b).getTime();
-  });
+
 
   return (
     <div className="flex flex-col justify-around items-center w-full gap-[1vh] pt-[10vh]">
       <h1 className="text-primary-accent-color text-start w-full text-[2.5vh] font-[900]">
         Upcoming Dawdles 🦆🐤
       </h1>
-      {sortedEvents
-        .filter((event) => curEvent && event.title !== curEvent.title)
+      {events
+        
         .map((event, index) => (
           <div
             onClick={() => dispatch(setCurEvent(event))}
