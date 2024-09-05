@@ -68,6 +68,7 @@ const Group: NextPage = () => {
         .writeText(group.secret_key)
         .then(() => {
           alert("Secret key copied to clipboard!");
+          showInviteModal()
         })
         .catch((err) => {
           console.error("Failed to copy text: ", err);

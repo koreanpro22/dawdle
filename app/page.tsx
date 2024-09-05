@@ -211,7 +211,8 @@ export default function Landing() {
     try {
         const groupRef = await addDoc(collection(firestore, "groups"), groupData);
         fetchUserGroups()
-        console.log("Group created with ID: ", groupRef.id);
+        setCreateModal(false)
+        setAdd(false)
         setOpen(false);
         setGroupName("");
         setImageFile(null);
@@ -250,6 +251,7 @@ export default function Landing() {
       handleJoinModal(); 
       setSecretKey("")
       fetchUserGroups()
+      setAdd(false)
 
     } catch (e) {
       console.error("Error joining group: ", e);
@@ -354,8 +356,8 @@ export default function Landing() {
   }
 
   const handleAdd = () => setAdd(true);
-  const handleJoinModal = () => setJoinModal(!joinModal);
-  const handleCreateModal = () => setCreateModal(!createModal);
+  const handleJoinModal = () => {setJoinModal(!joinModal) ; setAdd(false)};
+  const handleCreateModal = () => {setCreateModal(!createModal); setAdd(false)};
 
   if (user) {
     return (
@@ -498,7 +500,7 @@ export default function Landing() {
                     <div className="flex">
                       <h1
                         onClick={handleJoinModal}
-                        className="ml-[2vh] text-[3vh] text-white absolute left-0"
+                        className="ml-[2vh] text-[3vh] text-white absolute left-0 cursor-pointer"
                       >
                         x
                       </h1>
@@ -543,7 +545,7 @@ export default function Landing() {
                     <div className="flex">
                       <h1
                         onClick={handleCreateModal}
-                        className="ml-[2vh] text-[3vh] text-white absolute left-0"
+                        className="ml-[2vh] text-[3vh] text-white absolute left-0 cursor-pointer"
                       >
                         x
                       </h1>
