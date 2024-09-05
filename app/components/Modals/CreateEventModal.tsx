@@ -278,7 +278,6 @@ export default function CreateEventModal({ group }: Props) {
                   <option value="park">Park</option>
                 </select>
               </div>
-
               <div className="flex flex-col gap-3">
                 <label 
                                   className="text-[2vh] text-[#000000] font-bold lowercase"

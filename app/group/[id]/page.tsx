@@ -68,6 +68,7 @@ const Group: NextPage = () => {
         .writeText(group.secret_key)
         .then(() => {
           alert("Secret key copied to clipboard!");
+          showInviteModal()
         })
         .catch((err) => {
           console.error("Failed to copy text: ", err);
@@ -234,7 +235,7 @@ const Group: NextPage = () => {
               </div>
             )}
           </div>
-          <div>
+          <div className="mb-[3vh]">
             <UpcomingDwadlesButton events={group.events} />
             {/* <UpcomingDwadlesButton /> */}
           </div>
