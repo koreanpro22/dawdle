@@ -235,7 +235,7 @@ const Group: NextPage = () => {
               </div>
             )}
           </div>
-          <div>
+          <div className="mb-[3vh]">
             <UpcomingDwadlesButton events={group.events} />
             {/* <UpcomingDwadlesButton /> */}
           </div>

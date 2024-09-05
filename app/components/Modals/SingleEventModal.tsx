@@ -115,14 +115,58 @@ export default function SingleEventModal({ event }: SingleEventModalProps) {
 
       {event?.title.length > 0 && (
         <>
-          <button className=" relative w-full">
+        <div className="flex justify-center items-center">
+          <button className=" relative w-[50rem] mb-[3vh]">
+          {event?.type == "gym" ? (
+              <Image
+                 className="w-full object-contain "
+                 width={1200}   
+                 height={800}
+                 alt={"dawdle"}
+                 src={"/images/gym.png"}
+              ></Image> 
+          ): event?.type == "cafe" ? (
+            <Image
+              className="w-full object-contain"
+              width={1200}   
+              height={800}
+              alt={"dawdle"}
+              src={"/images/cafe.png"}
+            ></Image>
+          ): event?.type == "food" ? (
+            <Image
+              className="w-full object-cover"
+              width={1200}   
+              height={800}
+              alt={"dawdle"}
+              src={"/images/restaurant.png"}
+            ></Image>
+          ): event?.type == "park" ?(
             <Image
               className="w-full"
-              width={250}
-              height={250}
+              width={1200}   
+              height={800}
+              alt={"dawdle"}
+              src={"/images/park.png"}
+            ></Image>
+          ): event?.type == "club" ?(
+            <Image
+              className="w-full object-contain"
+              width={1200}   
+              height={800}
+              alt={"dawdle"}
+              src={"/images/club.png"}
+            ></Image>
+          ):(
+            <Image
+              className="w-full object-contain"
+              width={1200}   
+              height={800}
               alt={"dawdle"}
               src={"/images/placeholder-location.png"}
             ></Image>
+          )}
+          
             <div
               className="top-0 absolute z-[10] bg-[#360F50] rounded-t-[1vh] w-full flex justify-center items-center gap-[1vh] py-[2vh]"
               onClick={handleOpen}
@@ -175,6 +219,7 @@ export default function SingleEventModal({ event }: SingleEventModalProps) {
               </div>
             </div>
           </button>
+          </div>
           <div className="text-white text-[3.5vh] font-bold text-center">
             {localDateString}{" "}{" "}
             {new Date("1970-01-01T" + event?.time).toLocaleTimeString(

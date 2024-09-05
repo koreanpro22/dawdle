@@ -192,21 +192,29 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
       if (groupSnap.exists()) {
         const groupData = groupSnap.data();
 
-        // Ensure the events array exists
+
         const events = groupData.events || [];
         console.log("events before deletion", events);
 
-        // Delete the specific event by filtering it out
+   
         const updatedEvents = events.filter(
           (_: any, index: number) => index !== eventIndex
         );
 
         console.log("events after deletion", updatedEvents);
 
-        // Update the document with the modified events array
+ 
         await updateDoc(groupRef, {
           events: updatedEvents,
         });
+        const nextEventIndex = eventIndex < updatedEvents.length ? eventIndex : updatedEvents.length - 1;
+
+      if (updatedEvents.length > 0) {
+        const nextEvent = updatedEvents[nextEventIndex];
+        dispatch(setCurEvent(nextEvent));
+      } else {
+        dispatch(setCurEvent(null)); 
+      }
       } else {
         console.error("Group document not found");
       }
@@ -335,7 +343,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
                   className="text-[2vh] text-[#000000] font-bold lowercase"
                   htmlFor="type"
                 >
-                  Event time
+                  Event type
                 </label>
                 <select
                   className="outline-none transition-colors ease-in-out duration-300 hover:bg-[#9B7AFF] focus:bg-[#9B7AFF] placeholder:text-white text-white bg-[#8A58FF] w-full rounded-[1vh] p-[1.5vh]"
