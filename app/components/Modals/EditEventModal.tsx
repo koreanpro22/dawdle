@@ -227,12 +227,6 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
         onClick={handleOpen}
         className="bg-primary-text-color w-min rounded-[4vh] px-[2vh] py-[2vh]"
       >
-        {/* <div
-                onClick={handleDelete}
-                className={`bg-[#E9C0E9] rounded-full w-min p-[2vh] text-[6vh]`}
-              >
-                👎
-              </div> */}
         <p className="text-primary-accent-color text-[3vh] font-bold text-nowrap">
           Edit Event
         </p>
