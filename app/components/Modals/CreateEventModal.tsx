@@ -5,6 +5,7 @@ import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { firestore } from "@/lib/firebase/config";
 import { usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
+import { selectCurEvent } from "@/lib/store/curEventSlice";
 import { selectUser } from "@/lib/store/userSlice";
 import CircularProgress from "@mui/material/CircularProgress";
 
@@ -21,6 +22,7 @@ interface FormData {
   type: string;
   itinerary: string;
   participants: Participant[];
+  id: number;
 }
 
 interface GroupEvent {  
@@ -47,6 +49,7 @@ interface Props {
 
 export default function CreateEventModal({ group }: Props) {
   const user = useSelector(selectUser);
+  const curEvent = useSelector(selectCurEvent);
   const pathname = usePathname();
   const groupId = pathname.split("/").pop();
   const [open, setOpen] = React.useState(false);
@@ -58,6 +61,7 @@ export default function CreateEventModal({ group }: Props) {
     type: "",
     itinerary: "",
     participants: [{ id: user.id, email: user.email }],
+    id: 0,
   });
 
   const [isButtonDisabled, setIsButtonDisabled] = React.useState(true);
@@ -75,6 +79,7 @@ export default function CreateEventModal({ group }: Props) {
       type: "",
       itinerary: "",
       participants: [{ id: user.id, email: user.email }],
+      id: 0,
     });
   };
 
@@ -83,6 +88,7 @@ export default function CreateEventModal({ group }: Props) {
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
+      id: group.events.length,
     }));
   };
 
@@ -102,6 +108,7 @@ export default function CreateEventModal({ group }: Props) {
       const groupRef = doc(firestore, "groups", `${groupId}`);
       await updateDoc(groupRef, {
         events: arrayUnion(formData),
+        
       });
 
       setFormData({
@@ -112,6 +119,7 @@ export default function CreateEventModal({ group }: Props) {
         type: "",
         itinerary: "",
         participants: [{ id: user.id, email: user.email }],
+        id: curEvent.id,
       });
       handleClose();
     };
@@ -166,7 +174,7 @@ export default function CreateEventModal({ group }: Props) {
             className="lowercase bg-white text-[#360F50] rounded-[4vh] px-[2vh] py-[2vh] text-[3vh] font-bold inset-0"
             onClick={handleOpen}
           >
-            event +
+            event + 
           </button>
         </div>
       ) : (

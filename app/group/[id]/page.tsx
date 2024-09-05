@@ -29,6 +29,7 @@ interface Event {
   type: string;
   itinerary: string;
   participants: Participant[];
+  id: number;
 }
 
 interface Group {
@@ -184,9 +185,9 @@ const Group: NextPage = () => {
                 
                   {curEvent?.participants[0]?.id === user.id && curEvent?.participants.length !== 0 && (
                     <>
-                  <EventDecisionButton event={curEvent} eventIndex={0} />
+                  <EventDecisionButton event={curEvent} eventIndex={curEvent.id} />
 
-                    <EditEventModal event={curEvent} eventIndex={0} />
+                    <EditEventModal event={curEvent} eventIndex={curEvent.id} />
                     </>
 
                   )}
