@@ -98,10 +98,20 @@ const Group: NextPage = () => {
             imageUrl: data.imageUrl || "",
           };
           setGroup(groupData);
-           if (!hasLoadedRef.current) {
-            dispatch(setCurEvent(groupData.events[0]));
-            hasLoadedRef.current = true; 
-           }
+          if (!hasLoadedRef.current || groupData?.events?.length <= 1) {
+            const parseDateTime = (event: Event) => {
+              return new Date(`${event.date}T${event.time}`);
+            };
+  
+            const sortedEvents = [...groupData.events].sort((a, b) => {
+              return parseDateTime(a).getTime() - parseDateTime(b).getTime();
+            });
+  
+            dispatch(setCurEvent(sortedEvents[0]));
+            
+  
+            hasLoadedRef.current = true;
+          }
         } else {
           redirect("/");
         }
