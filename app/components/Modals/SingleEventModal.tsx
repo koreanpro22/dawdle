@@ -168,7 +168,7 @@ export default function SingleEventModal({ event }: SingleEventModalProps) {
           ).toLocaleDateString("en-US", {
             month: "numeric",
             day: "numeric",
-          })} ${new Date("1970-01-01T" + event?.time + "Z").toLocaleTimeString(
+          })} ${new Date("1970-01-01T" + event?.time ).toLocaleTimeString(
             "en-US",
             { hour: "numeric", minute: "numeric", hour12: true }
           )}`}</div>

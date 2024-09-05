@@ -1,8 +1,8 @@
 "use client";
 
-import { setCurEvent, selectCurEvent } from "@/lib/store/curEventSlice";
+import { setCurEvent } from "@/lib/store/curEventSlice";
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch} from "react-redux";
 import Image from "next/image";
 
 interface Participant {
@@ -28,7 +28,6 @@ export default function UpcomingDwadlesButton({
   events,
 }: UpcomingDwadlesButtonProps) {
   const dispatch = useDispatch();
-  const curEvent = useSelector(selectCurEvent);
 
   const parseDateTime = (event: Event) => {
     return new Date(`${event.date}T${event.time}`);
@@ -56,7 +55,7 @@ export default function UpcomingDwadlesButton({
                 {`${new Date(event.date).toLocaleDateString("en-US", {
                   month: "numeric",
                   day: "numeric",
-                })} ${new Date(`1970-01-01T${event.time}Z`).toLocaleTimeString(
+                })} ${new Date(`1970-01-01T${event.time}`).toLocaleTimeString(
                   "en-US",
                   {
                     hour: "numeric",
