@@ -54,6 +54,7 @@ const Group: NextPage = () => {
     members: [],
     imageUrl: "",
   });
+  const [aniInvite, setAniInvite] = useState(false);
 
   const user = useSelector(selectUser);
   const curEvent = useSelector(selectCurEvent);
@@ -76,9 +77,18 @@ const Group: NextPage = () => {
     }
   };
 
-  const showInviteModal = () => {
-    setOpenInviteModal(!openInviteModal);
-  };
+
+
+  // const handleJoinModal = () => {
+  //   setAniJoin(!aniJoin);
+  //   if (!aniJoin) {
+  //     setJoinModal(!joinModal);
+  //   } else
+  //   setTimeout(() => {
+  //     setJoinModal(!joinModal);
+  //     setAdd(false);
+  //   }, 500); 
+  // };
 
   useEffect(() => {
     if (!groupId) return;
@@ -128,15 +138,25 @@ const Group: NextPage = () => {
 
   if (!user) redirect("/");
 
+  const showInviteModal = () => {
+    setAniInvite(!aniInvite);
+    if (!aniInvite) {
+      setOpenInviteModal(!openInviteModal);
+    } else
+      setTimeout(() => {
+        setOpenInviteModal(!openInviteModal);
+      }, 500); 
+  };
+
   return (
     <>
       {openInviteModal && (
         <>
           <div
             onClick={showInviteModal}
-            className="bg-[#000]/50 h-[100dvh] absolute w-full z-[20]"
+            className={`${aniInvite ? "animate-fadeIn" : " animate-fadeOut"} bg-[#000]/50 h-[100dvh] absolute w-full z-[20]`}
           ></div>
-          <div className="flex flex-col gap-[2vh] py-[4vh] justify-center items-center w-full absolute top-0 bg-[#360F50] z-[21]">
+          <div className={`${aniInvite ? "animate-slideDown" : "animate-slideUpOut"}  flex flex-col gap-[2vh] py-[4vh] justify-center items-center w-full absolute top-0 bg-[#360F50] z-[21]`}>
             <h1 className="text-[3vh] text-white font-bold">invite people</h1>
             <div className="flex gap-[1vh]">
               <Image

@@ -50,12 +50,12 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
   const groupId = pathname.split("/").pop();
   const [open, setOpen] = React.useState(false);
   const [formData, setFormData] = React.useState<FormData>(event);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const dispatch = useDispatch() 
+  const [aniOpen, setAniOpen] = React.useState(false);
+  const dispatch = useDispatch();
   const [isButtonDisabled, setIsButtonDisabled] = React.useState(true);
   const [missingFields, setMissingFields] = React.useState<string[]>([]);
   const [loading, setLoading] = React.useState(false);
+  const [aniDucks, setAniDucks] = React.useState(false);
 
   React.useEffect(() => {
     const requiredFields = ["title", "address", "date", "time", "type"];
@@ -147,6 +147,18 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
     }
   };
 
+  const handleOpen = () => {
+    setAniOpen(!aniOpen);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setAniOpen(!aniOpen);
+    setTimeout(() => {
+      setOpen(false);
+    }, 500);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -177,7 +189,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
 
       if (updatedEvent) {
         setFormData(updatedEvent);
-        dispatch(setCurEvent(updatedEvent))
+        dispatch(setCurEvent(updatedEvent));
       }
     });
 
@@ -185,57 +197,158 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
   }, [groupId, eventIndex]);
 
   const handleDelete = async () => {
-    const deleteEventFromGroup = async () => {
-      const groupRef = doc(firestore, "groups", `${groupId}`);
-      const groupSnap = await getDoc(groupRef);
-
-      if (groupSnap.exists()) {
-        const groupData = groupSnap.data();
-
-
-        const events = groupData.events || [];
-        console.log("events before deletion", events);
-
-   
-        const updatedEvents = events.filter(
-          (_: any, index: number) => index !== eventIndex
-        );
-
-        console.log("events after deletion", updatedEvents);
-
- 
-        await updateDoc(groupRef, {
-          events: updatedEvents,
-        });
-        const nextEventIndex = eventIndex < updatedEvents.length ? eventIndex : updatedEvents.length - 1;
-
-      if (updatedEvents.length > 0) {
-        const nextEvent = updatedEvents[nextEventIndex];
-        dispatch(setCurEvent(nextEvent));
-      } else {
-        dispatch(setCurEvent(null)); 
-      }
-      } else {
-        console.error("Group document not found");
-      }
-    };
-
-    deleteEventFromGroup();
+    setAniDucks(true);
+    setTimeout(() => {
+      setAniDucks(false);
+    }, 500);
+    
+    setTimeout(() => {
+      const deleteEventFromGroup = async () => {
+        const groupRef = doc(firestore, "groups", `${groupId}`);
+        const groupSnap = await getDoc(groupRef);
+  
+        if (groupSnap.exists()) {
+          const groupData = groupSnap.data();
+  
+          const events = groupData.events || [];
+          console.log("events before deletion", events);
+  
+          const updatedEvents = events.filter(
+            (_: any, index: number) => index !== eventIndex
+          );
+  
+          console.log("events after deletion", updatedEvents);
+  
+          await updateDoc(groupRef, {
+            events: updatedEvents,
+          });
+          const nextEventIndex =
+            eventIndex < updatedEvents.length
+              ? eventIndex
+              : updatedEvents.length - 1;
+  
+          if (updatedEvents.length > 0) {
+            const nextEvent = updatedEvents[nextEventIndex];
+            dispatch(setCurEvent(nextEvent));
+          } else {
+            dispatch(setCurEvent(null));
+          }
+        } else {
+          console.error("Group document not found");
+        }
+      };
+  
+      deleteEventFromGroup();
+    }, 1000);
   };
+
+  const getRandomDelay = () => `${Math.random() * 5}s`; // Delays between 0 to 5 seconds
+
+  const ducks = [
+    { id: 1, position: "top-0 left-0", size: "16vh", delay: getRandomDelay() },
+    {
+      id: 2,
+      position: "top-0 left-[4vh]",
+      size: "12vh",
+      delay: getRandomDelay(),
+    },
+    {
+      id: 3,
+      position: "top-0 left-[8vh]",
+      size: "8vh",
+      delay: getRandomDelay(),
+    },
+    {
+      id: 4,
+      position: "top-0 left-[12vh]",
+      size: "8vh",
+      delay: getRandomDelay(),
+    },
+    { id: 5, position: "top-0 right-0", size: "12vh", delay: getRandomDelay() },
+    {
+      id: 6,
+      position: "top-0 right-[4vh]",
+      size: "12vh",
+      delay: getRandomDelay(),
+    },
+    {
+      id: 7,
+      position: "top-0 right-[8vh]",
+      size: "12vh",
+      delay: getRandomDelay(),
+    },
+    {
+      id: 8,
+      position: "top-0 right-[12vh]",
+      size: "12vh",
+      delay: getRandomDelay(),
+    },
+    {
+      id: 9,
+      position: "top-0 right-[16vh]",
+      size: "12vh",
+      delay: getRandomDelay(),
+    },
+    {
+      id: 10,
+      position: "top-0 right-[20vh]",
+      size: "12vh",
+      delay: getRandomDelay(),
+    },
+    {
+      id: 11,
+      position: "top-0 right-[24vh]",
+      size: "12vh",
+      delay: getRandomDelay(),
+    },
+    {
+      id: 12,
+      position: "top-0 right-[28vh]",
+      size: "12vh",
+      delay: getRandomDelay(),
+    },
+  ];
 
   return (
     <div>
+      <div>
+          <div className="w-full flex justify-center items-center">
+            <Image
+              width={50}
+              height={50}
+              className={`${aniDucks ? "animate-scaleIn" : "animate-scaleOut"} inset-0 h-[20dvh] w-[20dvh] m-auto flex justify-center absolute z-[100]`}
+              src={"/images/Duck.png"}
+              alt=""
+            />
+          </div>
+
+        {/* {aniDucks && (
+          <>
+            {ducks.map((duck) => (
+              <Image
+                key={duck.id}
+                width={50}
+                height={50}
+                className={` animate-rain absolute ${duck.position} h-[${duck.size}]`}
+                src={"/images/Duck.png"}
+                alt=""
+                style={{ animationDelay: duck.delay || "0s" }}
+              />
+            ))}
+          </>
+        )} */}
+      </div>
       <button
         onClick={handleDelete}
-        className="bg-primary-accent-color w-min rounded-[4vh] px-[2vh] py-[2vh] mr-[10px]"
+        className="animate-fadeUpMin opacity-0 delay-200ms bg-primary-accent-color w-min rounded-[4vh] px-[2vh] py-[2vh] mr-[10px]"
       >
-        <p className="text-primary-text-color text-[3vh] font-bold text-nowrap">
+        <p className=" text-primary-text-color text-[3vh] font-bold text-nowrap">
           Delete Event
         </p>
       </button>
       <button
         onClick={handleOpen}
-        className="bg-primary-text-color w-min rounded-[4vh] px-[2vh] py-[2vh]"
+        className="animate-fadeUpMin opacity-0 delay-100ms bg-primary-text-color w-min rounded-[4vh] px-[2vh] py-[2vh]"
       >
         <p className="text-primary-accent-color text-[3vh] font-bold text-nowrap">
           Edit Event
@@ -248,7 +361,11 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
         aria-labelledby="edit-event-modal-title"
         aria-describedby="edit-event-modal-description"
       >
-        <div className="bg-[#FFCD80] h-[100dvh] flex justify-center items-center">
+        <div
+          className={`${
+            aniOpen ? "animate-slideDown" : "animate-slideUpOut"
+          }  bg-[#FFCD80] h-[100dvh] flex justify-center items-center`}
+        >
           <div className="flex p-[2vh] h-full flex-col w-full">
             <div className="flex relative justify-center">
               <div className="absolute top-0 left-0">

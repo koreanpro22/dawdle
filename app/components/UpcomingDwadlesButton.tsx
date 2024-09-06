@@ -2,7 +2,8 @@
 
 import { setCurEvent } from "@/lib/store/curEventSlice";
 import React from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { selectCurEvent } from "@/lib/store/curEventSlice";
 import Image from "next/image";
 
 interface Participant {
@@ -11,6 +12,7 @@ interface Participant {
 }
 
 interface Event {
+  id: string;
   title: string;
   address: string;
   date: string;
@@ -28,6 +30,7 @@ export default function UpcomingDwadlesButton({
   events,
 }: UpcomingDwadlesButtonProps) {
   const dispatch = useDispatch();
+  const curEvent = useSelector(selectCurEvent);
 
   const parseDateTime = (event: Event) => {
     return new Date(`${event.date}T${event.time}`);
@@ -60,7 +63,7 @@ export default function UpcomingDwadlesButton({
           <div
             onClick={() => dispatch(setCurEvent(event))}
             key={index}
-            className="h-[4rem] relative bg-[#fff] text-primary-accent-color pl-[2vh] flex gap-[2vh] items-center justify-between w-full rounded-full text-[1.75vh]"
+            className={`${curEvent.id === event.id ? "bg-primary-accent-color text-[#fff]" : "bg-[#fff] text-primary-accent-color"} transition-all ease-in-out h-[4rem] relative  pl-[2vh] flex gap-[2vh] items-center justify-between w-full rounded-full text-[1.75vh]`}
           >
             <span className="text-[2vh] font-bold">{event.title}</span>
             <div className="flex">

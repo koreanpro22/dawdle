@@ -144,6 +144,26 @@ body {
   background-color: var(--background-color);
 }
 
+.delay-100ms {
+  animation-delay: 100ms;
+}
+
+.delay-200ms {
+  animation-delay: 200ms;
+}
+
+.delay-300ms {
+  animation-delay: 300ms;
+}
+
+.delay-400ms {
+  animation-delay: 400ms;
+}
+
+.delay-500ms {
+  animation-delay: 500ms;
+}
+
 .animation-3d {
   transform: perspective(1500px) rotateY(15deg);
   border-radius: 1rem;

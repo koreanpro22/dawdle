@@ -3,36 +3,53 @@ import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { auth, firestore, storage } from "../lib/firebase/config";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut,
+} from "firebase/auth";
 import { selectUser } from "../lib/store/userSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../lib/store/userSlice";
-import { doc, collection, addDoc, deleteDoc, updateDoc, arrayUnion, arrayRemove, getDoc, getDocs, query, where } from "firebase/firestore";
+import {
+  doc,
+  collection,
+  addDoc,
+  deleteDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { redirect } from "next/navigation";
-import { useRouter } from 'next/navigation'
+import { useRouter } from "next/navigation";
 
 type Group = {
   id: string;
   name: string;
   author: string;
   participants: { id: string; email: string }[];
-  events: any[]; 
+  events: any[];
   secret_key: string;
   imageUrl?: string;
 };
 
 const modalStyle = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
   width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
+  bgcolor: "background.paper",
+  border: "2px solid #000",
   boxShadow: 24,
   p: 4,
 };
@@ -56,6 +73,11 @@ export default function Landing() {
   const dispatch = useDispatch();
   const router = useRouter();
 
+  const [animate, setAnimate] = useState(false);
+  const [aniJoin, setAniJoin] = useState(false);
+  const [aniCreate, setAniCreate] = useState(false);
+  const [aniEdit, setAniEdit] = useState(false);
+
   const handleSubmit = () => {
     if (isLogin) {
       signInWithEmailAndPassword(auth, email, password).catch((error) => {
@@ -68,8 +90,8 @@ export default function Landing() {
         alert("Invalid Email or Password");
       });
     }
-    setEmail("")
-    setPassword("")
+    setEmail("");
+    setPassword("");
   };
 
   const handlePasswordReset = () => {
@@ -127,12 +149,12 @@ export default function Landing() {
         const data = doc.data();
         return {
           id: doc.id,
-          name: data.name || 'Unnamed Group', 
-          author: data.author || '', 
+          name: data.name || "Unnamed Group",
+          author: data.author || "",
           participants: data.participants || [],
-          events: data.events || [], 
-          secret_key: data.secret_key || '', 
-          imageUrl: data.imageUrl || '',
+          events: data.events || [],
+          secret_key: data.secret_key || "",
+          imageUrl: data.imageUrl || "",
         };
       });
 
@@ -145,9 +167,9 @@ export default function Landing() {
   // async function fetchUserGroup(groupId: string): Promise<Group | null> {
   //   try {
   //     const groupRef = doc(firestore, "groups", groupId);
-      
+
   //     const groupDoc = await getDoc(groupRef);
-  
+
   //     if (groupDoc.exists()) {
   //       const data = groupDoc.data();
 
@@ -160,7 +182,7 @@ export default function Landing() {
   //         secret_key: data.secret_key || '',
   //         imageUrl: data.imageUrl || '',
   //       };
-  
+
   //       return group;
   //     } else {
   //       console.log("No such group!");
@@ -188,35 +210,37 @@ export default function Landing() {
       setImageFile(e.target.files[0]);
     }
   };
-  
 
   async function createGroup() {
     let imageURL = "";
 
     if (imageFile) {
-      const storageRef = ref(storage, `groups/${user?.id}/${Date.now()}_${imageFile.name}`);
+      const storageRef = ref(
+        storage,
+        `groups/${user?.id}/${Date.now()}_${imageFile.name}`
+      );
       const uploadTask = await uploadBytes(storageRef, imageFile);
       imageURL = await getDownloadURL(uploadTask.ref);
-    } 
+    }
 
     const groupData = {
-        author: user?.id,
-        name: groupName,
-        events: [],
-        participants: [],
-        secret_key: generateSecretKey(),
-        imageUrl: imageURL
+      author: user?.id,
+      name: groupName,
+      events: [],
+      participants: [],
+      secret_key: generateSecretKey(),
+      imageUrl: imageURL,
     };
 
     try {
-        const groupRef = await addDoc(collection(firestore, "groups"), groupData);
-        fetchUserGroups()
-        setCreateModal(false)
-        setAdd(false)
-        setOpen(false);
-        setGroupName("");
-        setImageFile(null);
-        return groupRef.id;
+      const groupRef = await addDoc(collection(firestore, "groups"), groupData);
+      fetchUserGroups();
+      setCreateModal(false);
+      setAdd(false);
+      setOpen(false);
+      setGroupName("");
+      setImageFile(null);
+      return groupRef.id;
     } catch (e) {
       console.error("Error adding document: ", e);
       throw new Error("Failed to create group");
@@ -248,27 +272,27 @@ export default function Landing() {
 
       console.log("User added to group with ID: ", groupDoc.id);
       alert("Successfully joined the group!");
-      handleJoinModal(); 
-      setSecretKey("")
-      fetchUserGroups()
-      setAdd(false)
-
+      handleJoinModal();
+      setSecretKey("");
+      fetchUserGroups();
+      setAdd(false);
     } catch (e) {
       console.error("Error joining group: ", e);
       alert("Failed to join the group.");
     }
   }
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
   async function deleteGroup(groupId: string) {
-    if (confirm("Are you sure you want to delete this group? This action cannot be undone.")) {
+    if (
+      confirm(
+        "Are you sure you want to delete this group? This action cannot be undone."
+      )
+    ) {
       try {
         const groupRef = doc(firestore, "groups", groupId);
         await deleteDoc(groupRef);
         alert("Group deleted successfully.");
-        fetchUserGroups(); 
+        fetchUserGroups();
       } catch (e) {
         console.error("Error deleting group: ", e);
         alert("Failed to delete group.");
@@ -287,7 +311,7 @@ export default function Landing() {
           }),
         });
         alert("You have left the group.");
-        fetchUserGroups(); 
+        fetchUserGroups();
       } catch (e) {
         console.error("Error leaving group: ", e);
         alert("Failed to leave the group.");
@@ -295,21 +319,14 @@ export default function Landing() {
     }
   }
 
-  const handleEditOpen = (group: Group) => {
-    setEditGroup(group);
-    setEditOpen(true);
-  };
-
-  const handleEditClose = () => {
-    setEditGroup(null);
-    setEditOpen(false);
-  };
-
   async function updateGroup() {
     let imageURL = editGroup?.imageUrl || "";
 
     if (imageFile) {
-      const storageRef = ref(storage, `groups/${user?.id}/${Date.now()}_${imageFile.name}`);
+      const storageRef = ref(
+        storage,
+        `groups/${user?.id}/${Date.now()}_${imageFile.name}`
+      );
       const uploadTask = await uploadBytes(storageRef, imageFile);
       imageURL = await getDownloadURL(uploadTask.ref);
     }
@@ -333,15 +350,18 @@ export default function Landing() {
 
   async function removeParticipant(participantId: string) {
     if (editGroup) {
-      const updatedParticipants = editGroup.participants.filter(participant => participant.id !== participantId);
+      const updatedParticipants = editGroup.participants.filter(
+        (participant) => participant.id !== participantId
+      );
       setEditGroup({ ...editGroup, participants: updatedParticipants });
-  
+
       const groupRef = doc(firestore, "groups", editGroup.id);
       try {
         await updateDoc(groupRef, {
           participants: arrayRemove({
             id: participantId,
-            email: editGroup.participants.find(p => p.id === participantId)?.email
+            email: editGroup.participants.find((p) => p.id === participantId)
+              ?.email,
           }),
         });
         alert("Participant removed successfully.");
@@ -350,14 +370,63 @@ export default function Landing() {
         console.error("Error removing participant: ", e);
         alert("Failed to remove participant.");
         // Revert optimistic update if the operation fails
-        setEditGroup(prev => prev ? { ...prev, participants: editGroup.participants } : null);
+        setEditGroup((prev) =>
+          prev ? { ...prev, participants: editGroup.participants } : null
+        );
       }
     }
   }
 
-  const handleAdd = () => setAdd(true);
-  const handleJoinModal = () => {setJoinModal(!joinModal) ; setAdd(false)};
-  const handleCreateModal = () => {setCreateModal(!createModal); setAdd(false)};
+  // const handleOpen = () => {
+  //   setOpen(true);
+  // };
+  // const handleClose = () => {
+  //   setOpen(false);
+  // };
+
+  const handleEditOpen = (group: Group) => {
+    setAniEdit(!aniEdit);
+    setEditGroup(group);
+    setEditOpen(true);
+  };
+
+  const handleEditClose = () => {
+    setAniEdit(!aniEdit);
+
+    setTimeout(() => {
+      setEditGroup(null);
+      setEditOpen(false);
+    }, 500); 
+
+  };
+
+  const handleAdd = () => {
+    setAdd(true);
+  };
+
+  const handleJoinModal = () => {
+    setAniJoin(!aniJoin);
+    if (!aniJoin) {
+      setJoinModal(!joinModal);
+    } else
+    setTimeout(() => {
+      setJoinModal(!joinModal);
+      setAdd(false);
+    }, 500); 
+  };
+
+  const handleCreateModal = () => {
+    setAniCreate(!aniCreate);
+    if (!aniCreate) {
+      setCreateModal(!createModal);
+    } else
+    setTimeout(() => {
+      setCreateModal(!createModal);
+      setAdd(false);
+    }, 500); 
+
+    setAdd(false);
+  };
 
   if (user) {
     return (
@@ -365,27 +434,30 @@ export default function Landing() {
         <div className="flex-1 w-[92.5%]">
           <div className="flex flex-col gap-[2vh]">
             {userGroups?.map((group) => (
-              <button className="bg-[#8A58FF] rounded-[1vh] p-[1vh] relative" >
-                <div className="flex items-center gap-[1vh]" onClick={() => router.push(`/group/${group.id}`)}>
-                {group.imageUrl ? (
-                  <Image
-                    src={group.imageUrl}
-                    alt={`${group.name} Image`}
-                    width={200}
-                    height={200}
-                    className="h-[8vh] w-[8vh]"
-                    objectFit="cover"
-                  />
-                ) : (
-                  <Image
-                  src={`/images/duck.png`}
-                  alt={`${group.name} Image`}
-                  width={200}
-                  height={200}
-                  className="h-[8vh] w-[8vh]"
-                  objectFit="cover"
-                />
-                )}
+              <button className="animate-fadeUp bg-[#8A58FF] rounded-[1vh] p-[1vh] relative">
+                <div
+                  className="flex items-center gap-[1vh]"
+                  onClick={() => router.push(`/group/${group.id}`)}
+                >
+                  {group.imageUrl ? (
+                    <Image
+                      src={group.imageUrl}
+                      alt={`${group.name} Image`}
+                      width={200}
+                      height={200}
+                      className="h-[8vh] w-[8vh]"
+                      objectFit="cover"
+                    />
+                  ) : (
+                    <Image
+                      src={`/images/duck.png`}
+                      alt={`${group.name} Image`}
+                      width={200}
+                      height={200}
+                      className="h-[8vh] w-[8vh]"
+                      objectFit="cover"
+                    />
+                  )}
                   <div className="flex flex-col">
                     <p className="text-white font-semibold text-[2.25vh]">
                       {group.name}
@@ -395,107 +467,130 @@ export default function Landing() {
                 </div>
                 {group.author === user.id ? (
                   <div className="absolute top-2 right-2 flex gap-2">
-                    <Button onClick={() => handleEditOpen(group)} style={{ color: 'white' }}>Edit</Button>
-                    <Button onClick={() => deleteGroup(group.id)} style={{ color: 'red' }}>Delete</Button>
+                    <Button
+                      onClick={() => handleEditOpen(group)}
+                      style={{ color: "white" }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      onClick={() => deleteGroup(group.id)}
+                      style={{ color: "red" }}
+                    >
+                      Delete
+                    </Button>
                   </div>
                 ) : (
                   <div className="absolute top-2 right-2">
-                    <Button onClick={() => leaveGroup(group.id)} style={{ color: 'red' }}>Leave</Button>
+                    <Button
+                      onClick={() => leaveGroup(group.id)}
+                      style={{ color: "red" }}
+                    >
+                      Leave
+                    </Button>
                   </div>
                 )}
 
                 <div className="right-0 bottom-0 m-[1vh] absolute flex justify-center items-center bg-[#360F50] rounded-full px-[1.5vh] py-[0.75vh]">
                   <img className="" src="/images/chick.svg" alt="" />
                   <h1 className="text-white m-auto">
-                  {group.participants.length + 1}
+                    {group.participants.length + 1}
                   </h1>
                 </div>
               </button>
             ))}
             {editOpen && editGroup && (
               <>
-              <div className="h-[100dvh] w-[100dvw] bg-black/50 absolute inset-0"></div>
+                <div className={`${aniEdit ? 'animate-fadeIn' : 'animate-fadeOut'} h-[100dvh] w-[100dvw] bg-black/50 absolute inset-0`}></div>
 
-              <div className="flex flex-col bg-[#8A58FF] py-[3vh] left-0 bottom-0 absolute w-full z-10">
-                <div className="flex flex-col gap-[3vh] w-[65%] m-auto">
-                  <div className="flex">
-                    <h1
-                      onClick={handleEditClose}
-                      className="ml-[2vh] text-[3vh] text-white absolute left-0 cursor-pointer"
-                    >
-                      x
-                    </h1>
-                    <h1 className="text-[3vh] text-white m-auto">
-                      edit group
-                    </h1>
-                  </div>
-                  <div className="flex flex-col m-auto w-full">
-                    <label htmlFor="name" className="text-white">
-                      name
-                    </label>
-                    <input
-                      onChange={(e) => setGroupName(e.target.value)}
-                      value={groupName || editGroup?.name}
-                      className="rounded-[1vh] p-[1vh]"
-                      type="text"
-                      aria-label="name"
-                    />
-                  </div>
-                  <div className="">
-                    <label
-                      htmlFor="editImageInput"
-                      className="w-full flex h-[15vh] border-[0.25vh] border-solid border-white items-center justify-center rounded-[1vh] cursor-pointer"
-                    >
-                      <span className="text-white text-[3vh]">
-                        + group image
-                      </span>
+                <div className={`${aniEdit ? 'animate-slideUp' : 'animate-slideOut'} flex flex-col bg-[#8A58FF] py-[3vh] left-0 bottom-0 absolute w-full z-10`}>
+                  <div className="flex flex-col gap-[3vh] w-[65%] m-auto">
+                    <div className="flex">
+                      <h1
+                        onClick={handleEditClose}
+                        className="ml-[2vh] text-[3vh] text-white absolute left-0 cursor-pointer"
+                      >
+                        x
+                      </h1>
+                      <h1 className="text-[3vh] text-white m-auto">
+                        edit group
+                      </h1>
+                    </div>
+                    <div className="flex flex-col m-auto w-full">
+                      <label htmlFor="name" className="text-white">
+                        name
+                      </label>
                       <input
-                        id="editImageInput"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleFileChange}
+                        onChange={(e) => setGroupName(e.target.value)}
+                        value={groupName || editGroup?.name}
+                        className="rounded-[1vh] p-[1vh]"
+                        type="text"
+                        aria-label="name"
                       />
-                    </label>
-                  </div>
-                  <div className="mt-[2vh]">
-                    <h2 className="text-white mb-[1vh]">Participants:</h2>
-                    <ul className="flex flex-col gap-[1vh]">
-                      {editGroup.participants.map((participant) => (
-                        <li
-                          key={participant.id}
-                          className="flex justify-between items-center bg-white p-[1vh] rounded-[0.5vh]"
-                        >
-                          <span className="text-black">{participant.email}</span>
-                          <button
-                            onClick={() => removeParticipant(participant.id)}
-                            className="text-red-600 hover:underline"
+                    </div>
+                    <div className="">
+                      <label
+                        htmlFor="editImageInput"
+                        className="w-full flex h-[15vh] border-[0.25vh] border-solid border-white items-center justify-center rounded-[1vh] cursor-pointer"
+                      >
+                        <span className="text-white text-[3vh]">
+                          + group image
+                        </span>
+                        <input
+                          id="editImageInput"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleFileChange}
+                        />
+                      </label>
+                    </div>
+                    <div className="mt-[2vh]">
+                      <h2 className="text-white mb-[1vh]">Participants:</h2>
+                      <ul className="flex flex-col gap-[1vh]">
+                        {editGroup.participants.map((participant) => (
+                          <li
+                            key={participant.id}
+                            className="flex justify-between items-center bg-white p-[1vh] rounded-[0.5vh]"
                           >
-                            Remove
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
+                            <span className="text-black">
+                              {participant.email}
+                            </span>
+                            <button
+                              onClick={() => removeParticipant(participant.id)}
+                              className="text-red-600 hover:underline"
+                            >
+                              Remove
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <button
+                      onClick={updateGroup}
+                      className="bg-white w-fit m-auto px-[3vh] py-[1vh] rounded-[2vh] text-[3vh] text-[#8A58FF]"
+                    >
+                      update
+                    </button>
                   </div>
-                  <button
-                    onClick={updateGroup}
-                    className="bg-white w-fit m-auto px-[3vh] py-[1vh] rounded-[2vh] text-[3vh] text-[#8A58FF]"
-                  >
-                    update
-                  </button>
                 </div>
-              </div>
               </>
-              )}
+            )}
 
             {joinModal && (
               <>
                 <div
                   // onClick={handleJoinModal}
-                  className="h-[100dvh] bg-black/50 absolute inset-0"
+                  className={`${
+                    aniJoin ? "animate-fadeIn" : "animate-fadeOut"
+                  } h-[100dvh] bg-black/50 absolute inset-0`}
                 ></div>
 
-                <div className="flex flex-col bg-[#8A58FF] py-[3vh] left-0 bottom-0 absolute w-full z-10">
+                <div
+                  className={`${
+                    aniJoin ? "animate-slideUp" : "animate-slideOut"
+                  } flex flex-col bg-[#8A58FF] py-[3vh] left-0 bottom-0 absolute w-full z-10`}
+                >
                   <div className="flex flex-col gap-[3vh] w-[65%] m-auto ">
                     <div className="flex">
                       <h1
@@ -537,10 +632,10 @@ export default function Landing() {
               <>
                 <div
                   // onClick={handleJoinModal}
-                  className="h-[100dvh] bg-black/50 absolute inset-0"
+                  className={`${aniCreate ? "animate-fadeIn" : "animate-fadeOut"} h-[100dvh] bg-black/50 absolute inset-0`}
                 ></div>
 
-                <div className="flex flex-col bg-[#8A58FF] py-[3vh] left-0 bottom-0 absolute w-full z-10">
+                <div className={`${aniCreate ? "animate-slideUp" : "animate-slideOut"} flex flex-col bg-[#8A58FF] py-[3vh] left-0 bottom-0 absolute w-full z-10`}>
                   <div className="flex flex-col gap-[3vh] w-[65%] m-auto ">
                     <div className="flex">
                       <h1
@@ -577,7 +672,7 @@ export default function Landing() {
                           type="file"
                           accept="image/*"
                           className="hidden"
-                          onChange={handleFileChange} 
+                          onChange={handleFileChange}
                         />
                       </label>
                     </div>
@@ -603,13 +698,13 @@ export default function Landing() {
               {add ? (
                 <div className="absolute right-0 bottom-0 flex flex-col gap-[0.5vh]">
                   <button
-                    className="bg-white text-[#8A58FF] focus:text-[#ffffff] hover:text-[#ffffff] transition-all hover:bg-[#8A58FF] focus:bg-[#8A58FF] ease-in-out font-semibold w-full text-[2vh] rounded-full px-[1vh] py-[1vh]"
+                    className="animate-fadeUp bg-white text-[#8A58FF] focus:text-[#ffffff] hover:text-[#ffffff] transition-all hover:bg-[#8A58FF] focus:bg-[#8A58FF] ease-in-out font-semibold w-full text-[2vh] rounded-full px-[1vh] py-[1vh]"
                     onClick={handleJoinModal}
                   >
                     join group
                   </button>
                   <button
-                    className="bg-white text-[#8A58FF] focus:text-[#ffffff] hover:text-[#ffffff] transition-all hover:bg-[#8A58FF] focus:bg-[#8A58FF] ease-in-out font-semibold w-full text-[2vh] rounded-full px-[1vh] py-[1vh]"
+                    className="opacity-0 animate-fadeUp delay-100ms animation-delay bg-white text-[#8A58FF] focus:text-[#ffffff] hover:text-[#ffffff] transition-all hover:bg-[#8A58FF] focus:bg-[#8A58FF] ease-in-out font-semibold w-full text-[2vh] rounded-full px-[1vh] py-[1vh]"
                     onClick={handleCreateModal}
                   >
                     create group
