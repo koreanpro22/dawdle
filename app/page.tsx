@@ -749,7 +749,7 @@ export default function Landing() {
   }
 
   return (
-    <div className="lg:w-[90%] flex flex-col lg:flex-row m-auto lg:h-screen p-[3vh] max-h-[100dvh] h-[100dvh] overflow-hidden">
+    <div className="lg:w-[90%] flex flex-col lg:flex-row m-auto lg:h-screen p-[3vh] max-h-[120dvh] h-[120dvh] overflow-hidden">
       <div className="lg:my-auto mx-auto flex flex-col lg:justify-center">
         <audio
           ref={audioRef}
