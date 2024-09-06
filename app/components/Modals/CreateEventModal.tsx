@@ -64,19 +64,41 @@ export default function CreateEventModal({ group }: Props) {
   const [isButtonDisabled, setIsButtonDisabled] = React.useState(true);
   const [missingFields, setMissingFields] = React.useState<string[]>([]);
   const [loading, setLoading] = React.useState(false);
+  const [aniOpen, setAniOpen] = React.useState(false);
 
-  const handleOpen = () => setOpen(true);
+  const [aniDucks, setAniDucks] = React.useState(false);
+
+  // const handleJoinModal = () => {
+  //   setAniJoin(!aniJoin);
+  //   if (!aniJoin) {
+  //     setJoinModal(!joinModal);
+  //   } else
+  //   setTimeout(() => {
+  //     setJoinModal(!joinModal);
+  //     setAdd(false);
+  //   }, 500); 
+  // };
+
+  const handleOpen = () => {
+    setAniOpen(!aniOpen);
+      setOpen(true);
+  };
+
   const handleClose = () => {
-    setOpen(false);
-    setFormData({
-      title: "",
-      address: "",
-      date: "",
-      time: "",
-      type: "",
-      itinerary: "",
-      participants: [{ id: user.id, email: user.email }],
-    });
+    setAniOpen(!aniOpen);
+    setTimeout(() => {
+      setOpen(false);
+      setFormData({
+        title: "",
+        address: "",
+        date: "",
+        time: "",
+        type: "",
+        itinerary: "",
+        participants: [{ id: user.id, email: user.email }],
+      });
+    }, 500);
+    
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -97,6 +119,11 @@ export default function CreateEventModal({ group }: Props) {
   }, [formData]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    setAniDucks(true);
+    setTimeout(() => {
+      setAniDucks(false);
+    }, 500);
+    
     e.preventDefault();
 
     const createEvent = async () => {
@@ -165,10 +192,17 @@ export default function CreateEventModal({ group }: Props) {
 
   return (
     <div className="w-full">
+            <Image
+              width={50}
+              height={50}
+              className={`${aniDucks ? "animate-scaleIn" : "animate-scaleOut"} opacity-0 inset-0 h-[20dvh] w-[20dvh] m-auto flex justify-center absolute z-[100]`}
+              src={"/images/Duck.png"}
+              alt=""
+            />
       {group.events.length > 0 ? (
         <div className="w-full m-auto flex justify-center items-center">
           <button
-            className="lowercase bg-white text-[#360F50] rounded-[4vh] px-[2vh] py-[2vh] text-[3vh] font-bold inset-0"
+            className="animate-fadeUpMin lowercase bg-white text-[#360F50] rounded-[4vh] px-[2vh] py-[2vh] text-[3vh] font-bold inset-0"
             onClick={handleOpen}
           >
             event +
@@ -177,7 +211,7 @@ export default function CreateEventModal({ group }: Props) {
       ) : (
         <div className="border-[0.25vh] border-white border-dashed w-full h-full flex justify-center items-center rounded-[2vh]">
           <button
-            className="lowercase text-white text-[3vh] font-bold inset-0 h-[40dvh]"
+            className="animate-pulse lowercase text-white text-[3vh] font-bold inset-0 h-[40dvh]"
             onClick={handleOpen}
           >
             + create event
@@ -191,7 +225,7 @@ export default function CreateEventModal({ group }: Props) {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <div className="bg-[#FFCD80] h-[100dvh] flex justify-center items-center">
+        <div className={`${aniOpen ? "animate-slideUp" : 'animate-slideOut'} bg-[#FFCD80] h-[100dvh] flex justify-center items-center`}>
           <div className="flex p-[2vh] h-full flex-col w-full">
             <div className="flex relative justify-center">
               <div className="absolute top-0 left-0">

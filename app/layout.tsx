@@ -3,6 +3,7 @@ import { Raleway } from "next/font/google";
 import "./globals.css";
 import ReduxProvider from "../lib/store/Provider"
 import { AuthProvider } from "../lib/context/AuthContext";
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 const raleway = Raleway({ subsets: ["latin"] });
 
@@ -19,6 +20,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={raleway.className}>
+      <GoogleAnalytics gaId="G-9SCM6QGGS1" />
+
       <ReduxProvider>
           <AuthProvider>
             {children}
