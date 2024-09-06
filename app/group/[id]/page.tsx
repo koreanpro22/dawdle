@@ -77,6 +77,19 @@ const Group: NextPage = () => {
     }
   };
 
+  const copyToClipboard1 = () => {
+    if (group.secret_key) {
+      navigator.clipboard
+        .writeText(group.secret_key)
+        .then(() => {
+          alert("Secret key copied to clipboard!");
+        })
+        .catch((err) => {
+          console.error("Failed to copy text: ", err);
+        });
+    }
+  };
+
 
 
   // const handleJoinModal = () => {
@@ -246,7 +259,7 @@ const Group: NextPage = () => {
                   src={"/images/copy.png"}
                 ></Image>
                 <button
-                  onClick={copyToClipboard}
+                  onClick={copyToClipboard1}
                   className="text-[#8A58FF] text-[3vh] font-bold bg-white rounded-[1.5vh] px-[2vh] py-[1vh]"
                   ref={secretKeyRef}
                 >
