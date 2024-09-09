@@ -93,7 +93,7 @@ export default function SingleEventModal({ event }: SingleEventModalProps) {
               x
             </div>
             {event?.participants.map((participant, index) => (
-              <div className="flex justify-center items-center gap-[1vh]">
+              <div className="flex justify-center items-center gap-[1vh]" key={index}>
                 {participant.id === event?.participants[0].id ? (
                   <Image
                     width={50}

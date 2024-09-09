@@ -444,8 +444,8 @@ export default function Landing() {
       <div className="flex flex-col justify-center items-center h-[100dvh] bg-[#FFCD80] relative py-[3vh]">
         <div className="flex-1 w-[92.5%]">
           <div className="flex flex-col gap-[2vh]">
-            {userGroups?.map((group) => (
-              <button className="animate-fadeUp bg-[#8A58FF] rounded-[1vh] p-[1vh] relative">
+            {userGroups?.map((group, index) => (
+              <button className="animate-fadeUp bg-[#8A58FF] rounded-[1vh] p-[1vh] relative" key={index}>
                 <div
                   className="flex items-center gap-[1vh]"
                   onClick={() => router.push(`/group/${group.id}`)}

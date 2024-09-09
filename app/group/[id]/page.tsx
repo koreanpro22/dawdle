@@ -225,14 +225,14 @@ const Group: NextPage = () => {
           {group.events.map((event, index) => {
             console.log("e + i ===> ", event, index);
             return (
-              <div className="flex justify-between flex-col">
+              <div className="flex justify-between flex-col" key={index}>
                 {curEvent?.id == event?.id && (
                   <>
                     <SingleEventModal event={curEvent} />
                     <div className="flex justify-center items-center gap-[1vh] py-[2vh]">
                       {curEvent?.participants[0]?.id === user.id &&
                       curEvent?.participants.length !== 0 ? (
-                        <EditEventModal event={event} eventIndex={index} />
+                        <EditEventModal event={event} eventIndex={index}/>
                       ) : curEvent?.participants.length >= 0 ? (
                         <EventDecisionButton
                           event={event}
