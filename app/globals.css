@@ -133,6 +133,7 @@ table {
 }
 /* ------------------------------------------- End Reset -------------------------------------------------- */
 
+
 :root {
   --background-color: #8a58ff;
   --primary-text-color: #ffffff;
@@ -143,6 +144,26 @@ body {
   background-color: var(--background-color);
 }
 
+.delay-100ms {
+  animation-delay: 100ms;
+}
+
+.delay-200ms {
+  animation-delay: 200ms;
+}
+
+.delay-300ms {
+  animation-delay: 300ms;
+}
+
+.delay-400ms {
+  animation-delay: 400ms;
+}
+
+.delay-500ms {
+  animation-delay: 500ms;
+}
+
 .animation-3d {
   transform: perspective(1500px) rotateY(15deg);
   border-radius: 1rem;
@@ -151,4 +172,10 @@ body {
 
 .animation-3d:hover {
     transform: perspective(1000px) rotateY(3deg);
+  }
+
+  .svg-button:hover .plus-icon path,
+  .svg-button:focus .plus-icon path {
+    transition: all ease-in-out 0.3s;
+    fill: #ffffff; /* Replace #newColor with the color you want */
   }
